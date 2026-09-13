@@ -1,503 +1,56 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto de Cômodo</title>
+    <link rel="stylesheet" href="style.css">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <meta
-        name="description"
-        content="Meu Planejador 3D - Planeje ambientes e visualize móveis em três dimensões."
-    >
-
-    <title>Meu Planejador 3D</title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+    <!-- Bibliotecas do Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
-
 <body>
 
-    <!-- =====================================================
-         TELA INICIAL
-    ====================================================== -->
+    <!-- Barra Lateral -->
+    <div class="sidebar">
+        <h2>Projeto de cômodo</h2>
 
-    <section
-        id="inicio"
-        class="tela-inicial"
-    >
-
-        <div class="inicio-conteudo">
-
-            <div class="logo-grande">
-                <span class="logo-marca">
-                    MP
-                </span>
-
-                <span>
-                    Meu Planejador
-                </span>
-            </div>
-
-
-            <h1>
-                Crie seu espaço
-                <span>em 3D</span>
-            </h1>
-
-
-            <p>
-                Planeje sua casa ou seu cômodo,
-                organize os móveis e visualize
-                seu projeto em três dimensões.
-            </p>
-
-
-            <div class="opcoes">
-
-                <button
-                    type="button"
-                    class="opcao-projeto"
-                    onclick="criarProjeto('casa')"
-                >
-
-                    <span class="icone-projeto icone-casa">
-                        <span></span>
-                    </span>
-
-                    <strong>
-                        Casa
-                    </strong>
-
-                    <small>
-                        Crie uma casa completa
-                    </small>
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="opcao-projeto"
-                    onclick="criarProjeto('comodo')"
-                >
-
-                    <span class="icone-projeto icone-comodo">
-                        <span></span>
-                    </span>
-
-                    <strong>
-                        Cômodo
-                    </strong>
-
-                    <small>
-                        Crie um quarto ou ambiente
-                    </small>
-
-                </button>
-
-            </div>
-
+        <div class="form-group">
+            <h3>Dimensões do Ambiente (Metros)</h3>
+            <label>Largura:</label>
+            <input type="number" id="inputLargura" value="10" min="1" max="50" oninput="atualizarAmbiente()">
+            
+            <label style="margin-top: 5px;">Comprimento:</label>
+            <input type="number" id="inputComprimento" value="8" min="1" max="50" oninput="atualizarAmbiente()">
         </div>
 
-    </section>
-
-
-    <!-- =====================================================
-         EDITOR
-    ====================================================== -->
-
-    <section
-        id="editor"
-        class="editor escondido"
-    >
-
-        <!-- =================================================
-             CABEÇALHO
-        ================================================== -->
-
-        <header class="topo">
-
-            <div class="logo">
-
-                <span class="logo-marca">
-                    MP
-                </span>
-
-                <span>
-                    Meu Planejador
-                </span>
-
+        <div>
+            <h3>Adicionar Móveis</h3>
+            <div class="grid-moveis">
+                <button class="btn-movel" onclick="adicionarMovel('cama')">🛏️ Cama</button>
+                <button class="btn-movel" onclick="adicionarMovel('sofa')">🛋️ Sofá</button>
+                <button class="btn-movel" onclick="adicionarMovel('mesa')">🪵 Mesa</button>
+                <button class="btn-movel" onclick="adicionarMovel('cadeira')">chair️ Cadeira</button>
+                <button class="btn-movel btn-full" onclick="adicionarMovel('armario')">🚪 Armário</button>
             </div>
-
-
-            <div
-                id="tipoProjeto"
-                class="nome-projeto"
-            >
-                Novo projeto
-            </div>
-
-
-            <div class="acoes">
-
-                <button
-                    type="button"
-                    class="botao-topo"
-                    onclick="salvarProjeto()"
-                >
-
-                    <span class="icone-botao salvar-icone"></span>
-
-                    <span>
-                        Salvar
-                    </span>
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="botao-topo secundario"
-                    onclick="novoProjeto()"
-                >
-
-                    <span class="icone-adicionar">
-                        +
-                    </span>
-
-                    <span>
-                        Novo
-                    </span>
-
-                </button>
-
-            </div>
-
-        </header>
-
-
-        <!-- =================================================
-             ÁREA PRINCIPAL
-        ================================================== -->
-
-        <div class="layout-editor">
-
-
-            <!-- =============================================
-                 BARRA LATERAL
-            ============================================== -->
-
-            <aside class="barra">
-
-                <div class="barra-titulo">
-
-                    <span class="titulo-icone">
-                        MP
-                    </span>
-
-                    <div>
-
-                        <h2>
-                            Ferramentas
-                        </h2>
-
-                        <p>
-                            Configure seu projeto
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <!-- =========================================
-                     AMBIENTE
-                ========================================== -->
-
-                <div class="grupo">
-
-                    <div class="grupo-titulo">
-
-                        <span class="indicador"></span>
-
-                        <h3>
-                            Ambiente
-                        </h3>
-
-                    </div>
-
-
-                    <label
-                        class="campo"
-                        for="largura"
-                    >
-
-                        <span>
-                            Largura
-                        </span>
-
-                        <div class="campo-input">
-
-                            <input
-                                type="number"
-                                id="largura"
-                                value="10"
-                                min="4"
-                                max="30"
-                                step="1"
-                                onchange="atualizarAmbiente()"
-                            >
-
-                            <small>
-                                m
-                            </small>
-
-                        </div>
-
-                    </label>
-
-
-                    <label
-                        class="campo"
-                        for="comprimento"
-                    >
-
-                        <span>
-                            Comprimento
-                        </span>
-
-                        <div class="campo-input">
-
-                            <input
-                                type="number"
-                                id="comprimento"
-                                value="8"
-                                min="4"
-                                max="30"
-                                step="1"
-                                onchange="atualizarAmbiente()"
-                            >
-
-                            <small>
-                                m
-                            </small>
-
-                        </div>
-
-                    </label>
-
-                </div>
-
-
-                <!-- =========================================
-                     MÓVEIS
-                ========================================== -->
-
-                <div class="grupo">
-
-                    <div class="grupo-titulo">
-
-                        <span class="indicador"></span>
-
-                        <h3>
-                            Móveis
-                        </h3>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="botao-movel"
-                        onclick="adicionarMovel('cama')"
-                    >
-                        <span class="icone-movel cama"></span>
-
-                        <span>
-                            Cama
-                        </span>
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="botao-movel"
-                        onclick="adicionarMovel('sofa')"
-                    >
-                        <span class="icone-movel sofa"></span>
-
-                        <span>
-                            Sofá
-                        </span>
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="botao-movel"
-                        onclick="adicionarMovel('mesa')"
-                    >
-                        <span class="icone-movel mesa"></span>
-
-                        <span>
-                            Mesa
-                        </span>
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="botao-movel"
-                        onclick="adicionarMovel('cadeira')"
-                    >
-                        <span class="icone-movel cadeira"></span>
-
-                        <span>
-                            Cadeira
-                        </span>
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="botao-movel"
-                        onclick="adicionarMovel('armario')"
-                    >
-                        <span class="icone-movel armario"></span>
-
-                        <span>
-                            Armário
-                        </span>
-                    </button>
-
-                </div>
-
-
-                <!-- =========================================
-                     OBJETO SELECIONADO
-                ========================================== -->
-
-                <div class="grupo">
-
-                    <div class="grupo-titulo">
-
-                        <span class="indicador"></span>
-
-                        <h3>
-                            Selecionado
-                        </h3>
-
-                    </div>
-
-
-                    <div
-                        id="objetoSelecionado"
-                        class="objeto-selecionado"
-                    >
-                        Nenhum móvel selecionado.
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="botao-remover"
-                        onclick="removerSelecionado()"
-                    >
-
-                        <span class="remover-icone">
-                            ×
-                        </span>
-
-                        Remover móvel
-
-                    </button>
-
-                </div>
-
-
-                <!-- =========================================
-                     INFORMAÇÕES
-                ========================================== -->
-
-                <div class="dica">
-
-                    <div class="dica-indicador"></div>
-
-                    <div>
-
-                        <strong>
-                            Como utilizar
-                        </strong>
-
-                        <p>
-                            Selecione um móvel e arraste-o
-                            para posicioná-lo no ambiente.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </aside>
-
-
-            <!-- =============================================
-                 ÁREA 3D
-            ============================================== -->
-
-            <main
-                id="area3d"
-                class="area-3d"
-            >
-
-                <div class="controles-3d">
-
-                    <span>
-                        Arraste para girar a câmera
-                    </span>
-
-                    <span>
-                        Use a roda do mouse para aproximar
-                    </span>
-
-                </div>
-
-            </main>
-
         </div>
 
-    </section>
+        <div>
+            <h3>Personalização</h3>
+            <label>Cor Principal do Móvel:</label>
+            <input type="color" id="corMovel" value="#8d6e63">
+        </div>
 
+        <button class="btn-acao" onclick="alternarVisao()">Alternar Visão (2D / 3D)</button>
+    </div>
 
-    <!-- =====================================================
-         THREE.JS
-    ====================================================== -->
+    <!-- Área Gráfica 3D / 2D -->
+    <div class="main-content">
+        <div class="top-right-bar" id="modoTexto">Modo: 2D (Planta Baixa)</div>
+        <div id="area3d"></div>
+    </div>
 
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
-    ></script>
-
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"
-    ></script>
-
-
-    <!-- =====================================================
-         APLICAÇÃO
-    ====================================================== -->
-
-    <script
-        src="script.js"
-    ></script>
-
+    <script src="script.js"></script>
 </body>
-
 </html>
