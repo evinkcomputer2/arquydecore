@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador 3D - Estilo Profissional</title>
+    <title>Planejador 2D e 3D - Profissional</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,7 +16,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-color: #f0f0f0;
+            background-color: #f4f4f4;
             display: flex;
             position: relative;
         }
@@ -30,6 +30,7 @@
             z-index: 1;
         }
 
+        /* BARRA SUPERIOR */
         .barra-superior {
             position: absolute;
             top: 15px;
@@ -75,7 +76,7 @@
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-size: 1rem;
+            font-size: 0.85rem;
             color: #333;
         }
 
@@ -83,6 +84,7 @@
             background: #f7f7f7;
         }
 
+        /* MENU LATERAL ESQUERDO */
         .menu-lateral {
             position: absolute;
             top: 75px;
@@ -104,16 +106,88 @@
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-size: 1.1rem;
+            font-size: 0.85rem;
             color: #444;
             transition: all 0.2s;
         }
 
         .btn-lateral:hover, .btn-lateral.ativo {
-            background: #f0f0f0;
-            border-color: #b0b0b0;
+            background: #e3f2fd;
+            border-color: #90caf9;
+            color: #1976d2;
         }
 
+        /* SUB-MENU DE FERRAMENTAS 2D (Expansível) */
+        .submenu-2d {
+            position: absolute;
+            top: 75px;
+            left: 65px;
+            background: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+            width: 160px;
+        }
+
+        .submenu-2d.visivel {
+            display: flex;
+        }
+
+        .submenu-2d button {
+            background: transparent;
+            border: none;
+            text-align: left;
+            padding: 8px;
+            font-size: 0.85rem;
+            color: #333;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .submenu-2d button:hover {
+            background: #f0f0f0;
+        }
+
+        /* PAINEL DE MEDIDAS DA SALA (Estilo da Imagem) */
+        .painel-medidas {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+            width: 220px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .painel-medidas h4 {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #1976d2;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .painel-medidas .info-linha {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .painel-medidas .info-linha span {
+            font-weight: bold;
+        }
+
+        /* BARRA INFERIOR */
         .barra-inferior {
             position: absolute;
             bottom: 20px;
@@ -184,14 +258,28 @@
         <button class="btn-icone-topo">Ajuda</button>
     </div>
 
+    <!-- MENU LATERAL COM ABA 2D -->
     <div class="menu-lateral">
-        <button class="btn-lateral">Planta</button>
-        <button class="btn-lateral">Zoom</button>
-        <button class="btn-lateral">Móveis</button>
-        <button class="btn-lateral">Favoritos</button>
-        <button class="btn-lateral">Catálogo</button>
-        <button class="btn-lateral">Medidas</button>
-        <button class="btn-lateral">Foto</button>
+        <button class="btn-lateral ativo" id="btnMenu2D" onclick="alternarSubmenu2D()" title="Ferramentas 2D / Paredes">2D</button>
+        <button class="btn-lateral" title="Móveis">Móv</button>
+        <button class="btn-lateral" title="Medidas">Med</button>
+        <button class="btn-lateral" title="Câmera">Cam</button>
+    </div>
+
+    <!-- SUBMENU EXPANSÍVEL DE FERRAMENTAS 2D -->
+    <div class="submenu-2d visivel" id="submenu2D">
+        <strong style="font-size: 0.8rem; color: #666; margin-bottom: 4px; display:block;">Paredes e Cômodos</strong>
+        <button onclick="definirFerramenta('linha')">Desenhar Linha</button>
+        <button onclick="definirFerramenta('retangulo')">Criar Sala Retangular</button>
+        <button onclick="limparAmbiente2D()">Reiniciar Desenho</button>
+    </div>
+
+    <!-- PAINEL DE METROS QUADRADOS E COTAS (Estilo da Referência) -->
+    <div class="painel-medidas" id="painelMedidas">
+        <h4>Sala 1 - Planta 2D</h4>
+        <div class="info-linha">Área Total: <span id="valArea">20.00 m²</span></div>
+        <div class="info-linha">Comprimento: <span id="valComp">560 cm</span></div>
+        <div class="info-linha">Largura: <span id="valLarg">357 cm</span></div>
     </div>
 
     <div id="area3d"></div>
@@ -201,18 +289,21 @@
             <button class="btn-inf">Config</button>
         </div>
         <div class="grupo-controles">
-            <button class="btn-inf">2D</button>
-            <button class="btn-inf ativo">3D</button>
+            <button class="btn-inf ativo" id="modo2DBtn" onclick="mudarModoVisualizacao('2d')">2D</button>
+            <button class="btn-inf" id="modo3DBtn" onclick="mudarModoVisualizacao('3d')">3D</button>
             <button class="btn-inf">Avatar</button>
         </div>
         <div class="grupo-controles">
-            <button class="btn-inf">Mais</button>
-            <button class="btn-inf">Menos</button>
+            <button class="btn-inf">+</button>
+            <button class="btn-inf">-</button>
         </div>
     </div>
 
     <script>
         let cena, camera, renderizador, controles;
+        let modoAtual = '2d';
+        let ferramentaAtiva = 'retangulo';
+        let salaMesh = null;
 
         function iniciar() {
             const container = document.getElementById("area3d");
@@ -220,65 +311,126 @@
             cena = new THREE.Scene();
             cena.background = new THREE.Color(0xf4f4f4);
 
-            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 6, 8);
+            // Câmera Inicial em 2D (Planta Baixa Direta de cima)
+            camera = new THREE.OrthographicCamera(
+                container.clientWidth / -2, container.clientWidth / 2,
+                container.clientHeight / 2, container.clientHeight / -2,
+                1, 1000
+            );
+            camera.position.set(0, 100, 0);
+            camera.lookAt(0, 0, 0);
 
             renderizador = new THREE.WebGLRenderer({ antialias: true });
             renderizador.setSize(container.clientWidth, container.clientHeight);
-            renderizador.shadowMap.enabled = true;
             container.appendChild(renderizador.domElement);
 
             controles = new THREE.OrbitControls(camera, renderizador.domElement);
-            controles.enableDamping = true;
-            controles.target.set(0, 1, 0);
+            controles.enableRotate = false; // Bloqueia rotação no modo 2D para parecer planta baixa exata
 
-            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.7);
+            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.9);
             cena.add(luzAmbiente);
 
-            const luzDirecional = new THREE.DirectionalLight(0xffffff, 0.5);
-            luzDirecional.position.set(5, 10, 7);
-            cena.add(luzDirecional);
-
-            const gridHelper = new THREE.GridHelper(30, 30, 0xcccccc, 0xe2e2e2);
-            gridHelper.position.y = 0;
+            const gridHelper = new THREE.GridHelper(50, 50, 0xdddddd, 0xeeeeee);
+            gridHelper.position.y = -0.1;
             cena.add(gridHelper);
 
-            criarAvatarCentral();
+            desenharSalaExemplo();
 
             animar();
 
             window.addEventListener("resize", onWindowResize);
         }
 
-        function criarAvatarCentral() {
-            const grupoAvatar = new THREE.Group();
+        function desenharSalaExemplo() {
+            if (salaMesh) cena.remove(salaMesh);
 
-            const matCorpo = new THREE.MeshStandardMaterial({ color: 0x9fa8da, roughness: 0.5 });
-            const geoCorpo = new THREE.CylinderGeometry(0.25, 0.3, 0.7, 16);
-            const corpo = new THREE.Mesh(geoCorpo, matCorpo);
-            corpo.position.y = 0.85;
-            grupoAvatar.add(corpo);
+            // Criando o piso da sala simulando a proporção da imagem (5.6m por 3.57m)
+            const larguraX = 11.2; // Escala proporcional visual
+            const profundidadeZ = 7.14;
 
-            const matCabeca = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
-            const geoCabeca = new THREE.SphereGeometry(0.18, 16, 16);
-            const cabeca = new THREE.Mesh(geoCabeca, matCabeca);
-            cabeca.position.y = 1.35;
-            grupoAvatar.add(cabeca);
+            const geometria = new THREE.PlaneGeometry(larguraX, profundidadeZ);
+            
+            // Textura visual amadeirada simulada por cor elegante
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0xd7ccc8, 
+                side: THREE.DoubleSide 
+            });
 
-            const matCalca = new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.6 });
-            const geoCalca = new THREE.CylinderGeometry(0.22, 0.22, 0.6, 16);
-            const calca = new THREE.Mesh(geoCalca, matCalca);
-            calca.position.y = 0.35;
-            grupoAvatar.add(calca);
+            salaMesh = new THREE.Mesh(geometria, material);
+            salaMesh.rotation.x = -Math.PI / 2;
+            salaMesh.position.set(0, 0, 0);
+            cena.add(salaMesh);
 
-            const matBase = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const geoBase = new THREE.RingGeometry(0.4, 0.5, 32);
-            const base = new THREE.Mesh(geoBase, matBase);
-            base.rotation.x = -Math.PI / 2;
-            base.position.y = 0.01;
-            grupoAvatar.add(base);
+            // Adicionando bordas pretas simulando as paredes em 2D
+            const pontosBorda = [
+                new THREE.Vector3(-larguraX/2, 0.05, -profundidadeZ/2),
+                new THREE.Vector3(larguraX/2, 0.05, -profundidadeZ/2),
+                new THREE.Vector3(larguraX/2, 0.05, profundidadeZ/2),
+                new THREE.Vector3(-larguraX/2, 0.05, profundidadeZ/2),
+                new THREE.Vector3(-larguraX/2, 0.05, -profundidadeZ/2)
+            ];
+            const geoBorda = new THREE.BufferGeometry().setFromPoints(pontosBorda);
+            const matBorda = new THREE.LineBasicMaterial({ color: 0x222222, linewidth: 3 });
+            const linhaBorda = new THREE.Line(geoBorda, matBorda);
+            salaMesh.add(linhaBorda);
+        }
 
-            cena.add(grupoAvatar);
+        function alternarSubmenu2D() {
+            const submenu = document.getElementById("submenu2D");
+            submenu.classList.toggle("visivel");
+        }
+
+        function definirFerramenta(ferramenta) {
+            ferramentaAtiva = ferramenta;
+            alert("Ferramenta ativa: " + (ferramenta === 'linha' ? "Desenho de Linhas métricas" : "Sala Retangular em metros quadrados"));
+            alternarSubmenu2D();
+        }
+
+        function limparAmbiente2D() {
+            if (salaMesh) {
+                cena.remove(salaMesh);
+                salaMesh = null;
+            }
+            document.getElementById("valArea").innerText = "0.00 m²";
+            document.getElementById("valComp").innerText = "0 cm";
+            document.getElementById("valLarg").innerText = "0 cm";
+        }
+
+        function mudarModoVisualizacao(modo) {
+            const container = document.getElementById("area3d");
+            const btn2D = document.getElementById("modo2DBtn");
+            const btn3D = document.getElementById("modo3DBtn");
+            const painel = document.getElementById("painelMedidas");
+
+            if (modo === '2d') {
+                modoAtual = '2d';
+                btn2D.classList.add("ativo");
+                btn3D.classList.remove("ativo");
+                painel.style.display = "block";
+
+                // Recriar câmera ortográfica focada em planta baixa
+                camera = new THREE.OrthographicCamera(
+                    container.clientWidth / -2, container.clientWidth / 2,
+                    container.clientHeight / 2, container.clientHeight / -2,
+                    1, 1000
+                );
+                camera.position.set(0, 100, 0);
+                camera.lookAt(0, 0, 0);
+                controles.object = camera;
+                controles.enableRotate = false;
+            } else {
+                modoAtual = '3d';
+                btn3D.classList.add("ativo");
+                btn2D.classList.remove("ativo");
+                painel.style.display = "none";
+
+                // Mudar para câmera perspectiva 3D livre
+                camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+                camera.position.set(0, 12, 15);
+                camera.lookAt(0, 0, 0);
+                controles.object = camera;
+                controles.enableRotate = true;
+            }
         }
 
         function animar() {
@@ -289,7 +441,14 @@
 
         function onWindowResize() {
             const container = document.getElementById("area3d");
-            camera.aspect = container.clientWidth / container.clientHeight;
+            if (modoAtual === '2d') {
+                camera.left = container.clientWidth / -2;
+                camera.right = container.clientWidth / 2;
+                camera.top = container.clientHeight / 2;
+                camera.bottom = container.clientHeight / -2;
+            } else {
+                camera.aspect = container.clientWidth / container.clientHeight;
+            }
             camera.updateProjectionMatrix();
             renderizador.setSize(container.clientWidth, container.clientHeight);
         }
