@@ -3,215 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador de Ambientes 3D</title>
+    <title>Planejador 3D - Estilo HomeByMe</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: #f7f4f0;
-            color: #4a3b32;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* TELA DE INÍCIO */
-        #inicio {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #6b4f3f, #3e2723);
-            color: #ffffff;
-            text-align: center;
-        }
-
-        #inicio h1 {
-            font-size: 2.8rem;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-        }
-
-        #inicio p {
-            font-size: 1.1rem;
-            color: #d7ccc8;
-            margin-bottom: 25px;
-        }
-
-        .botoes-inicio button {
-            background: #ffffff;
-            color: #3e2723;
-            border: none;
-            padding: 14px 28px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            margin: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s, background-color 0.2s;
-        }
-
-        .botoes-inicio button:hover {
-            transform: scale(1.05);
-            background: #efebe9;
-        }
-
-        /* EDITOR */
-        .escondido {
-            display: none !important;
-        }
-
-        #editor {
-            display: flex;
-            height: 100vh;
             width: 100vw;
-        }
-
-        /* BARRA LATERAL */
-        aside {
-            width: 330px;
-            background: #ffffff;
-            border-right: 1px solid #d7ccc8;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f0f0f0;
             display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-shadow: 2px 0 10px rgba(62, 39, 35, 0.05);
-            z-index: 10;
-            overflow-y: auto;
-        }
-
-        aside h2 {
-            font-size: 1.2rem;
-            color: #3e2723;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #efebe9;
-            padding-bottom: 8px;
-        }
-
-        .secao {
-            margin-bottom: 20px;
-        }
-
-        .secao label {
-            display: block;
-            font-size: 0.85rem;
-            color: #6d4c41;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .secao input[type="number"], .secao input[type="color"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #d7ccc8;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            background-color: #faf8f5;
-        }
-
-        .grid-moveis {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .grid-moveis button {
-            background: #fcfbfa;
-            border: 1px solid #d7ccc8;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: #4a3b32;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .grid-moveis button:hover {
-            background: #6b4f3f;
-            color: white;
-            border-color: #6b4f3f;
-        }
-
-        .acoes-extras {
-            margin-top: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .btn-acao {
-            background: #6b4f3f;
-            color: white;
-            border: none;
-            padding: 11px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .btn-acao:hover {
-            background: #50382b;
-        }
-
-        .btn-secundario {
-            background: #8d6e63;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .btn-secundario:hover {
-            background: #6d4c41;
-        }
-
-        .btn-perigo {
-            background: #d32f2f;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .btn-perigo:hover {
-            background: #c62828;
-        }
-
-        /* ÁREA 3D */
-        #area3d {
-            flex: 1;
-            height: 100%;
             position: relative;
         }
 
-        #info-status {
+        /* ÁREA 3D CANVAS */
+        #area3d {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* BARRA SUPERIOR */
+        .barra-superior {
             position: absolute;
             top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(62, 39, 35, 0.15);
+            left: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .btn-topo {
+            background: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             font-size: 0.9rem;
-            color: #3e2723;
-            z-index: 5;
-            border: 1px solid #efebe9;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: background 0.2s;
+        }
+
+        .btn-topo:hover {
+            background: #f7f7f7;
+        }
+
+        .btn-topo.amarelo {
+            background: #ffeb3b;
+            border-color: #fbc02d;
+            font-weight: bold;
+        }
+
+        .btn-icone-topo {
+            background: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 1rem;
+        }
+
+        .btn-icone-topo:hover {
+            background: #f7f7f7;
+        }
+
+        /* MENU LATERAL ESQUERDO */
+        .menu-lateral {
+            position: absolute;
+            top: 75px;
+            left: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .btn-lateral {
+            background: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 1.1rem;
+            color: #444;
+            transition: all 0.2s;
+        }
+
+        .btn-lateral:hover, .btn-lateral.ativo {
+            background: #f0f0f0;
+            border-color: #b0b0b0;
+        }
+
+        /* BARRA DE CONTROLE INFERIOR CENTRAL */
+        .barra-inferior {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .grupo-controles {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            border-right: 1px solid #e0e0e0;
+            padding-right: 4px;
+        }
+
+        .grupo-controles:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .btn-inf {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+        }
+
+        .btn-inf:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-inf.ativo {
+            background: #e3f2fd;
+            color: #1976d2;
+            font-weight: bold;
         }
     </style>
 
@@ -221,570 +178,145 @@
 </head>
 <body>
 
-    <!-- TELA INICIAL -->
-    <div id="inicio">
-        <h1>Planejador de Ambientes 3D</h1>
-        <p>Projete sua casa ou cômodo com elegância e sofisticação</p>
-        <div class="botoes-inicio">
-            <button onclick="criarProjeto('comodo')">🛏️ Projeto de Cômodo</button>
-            <button onclick="criarProjeto('casa')">🏠 Projeto de Casa</button>
-        </div>
+    <!-- INTERFACE SUPERIOR -->
+    <div class="barra-superior">
+        <button class="btn-topo amarelo">🏠</button>
+        <button class="btn-topo">≡ Novo projeto</button>
+        <button class="btn-topo">🥞 Andar térreo</button>
+        <button class="btn-icone-topo">💾</button>
+        <button class="btn-icone-topo">↩️</button>
+        <button class="btn-icone-topo">↪️</button>
+        <button class="btn-icone-topo">❓</button>
     </div>
 
-    <!-- TELA DE EDIÇÃO -->
-    <div id="editor" class="escondido">
-        <aside>
-            <h2 id="tipoProjeto">Projeto</h2>
+    <!-- MENU LATERAL ESQUERDO -->
+    <div class="menu-lateral">
+        <button class="btn-lateral">📐</button>
+        <button class="btn-lateral">🔍</button>
+        <button class="btn-lateral">🛋️</button>
+        <button class="btn-lateral">❤️</button>
+        <button class="btn-lateral">📋</button>
+        <button class="btn-lateral">📏</button>
+        <button class="btn-lateral">📷</button>
+    </div>
 
-            <div class="secao">
-                <label>Dimensões do Ambiente (Metros)</label>
-                <label>Largura:</label>
-                <input type="number" id="largura" value="10" min="4" max="20" onchange="atualizarAmbiente()">
-                <label>Comprimento:</label>
-                <input type="number" id="comprimento" value="8" min="4" max="20" onchange="atualizarAmbiente()">
-            </div>
+    <!-- ÁREA DE RENDERIZAÇÃO 3D -->
+    <div id="area3d"></div>
 
-            <div class="secao">
-                <h2>Adicionar Móveis</h2>
-                <div class="grid-moveis">
-                    <button onclick="adicionarMovel('cama')">🛏️ Cama</button>
-                    <button onclick="adicionarMovel('sofa')">🛋️ Sofá</button>
-                    <button onclick="adicionarMovel('mesa')">🪑 Mesa</button>
-                    <button onclick="adicionarMovel('cadeira')">🪑 Cadeira</button>
-                    <button onclick="adicionarMovel('armario')">🚪 Armário</button>
-                </div>
-            </div>
-
-            <div class="secao">
-                <h2>Personalização</h2>
-                <label>Cor Principal do Móvel:</label>
-                <input type="color" id="corMovel" value="#8b5a2b" onchange="alterarCorMovel(this.value)">
-                <button class="btn-acao" onclick="alternarVisao()" style="width: 100%; margin-top: 5px;">🔄 Alternar Visão (2D / 3D)</button>
-            </div>
-
-            <div class="acoes-extras">
-                <div id="objetoSelecionado" style="font-size: 0.82rem; color: #6d4c41; margin-bottom: 5px;">Nenhum móvel selecionado. (Pressione **R** para girar)</div>
-                <button class="btn-perigo" onclick="removerSelecionado()">🗑️ Remover Selecionado</button>
-                <button class="btn-acao" onclick="salvarProjeto()">💾 Salvar Projeto</button>
-                <button class="btn-secundario" onclick="novoProjeto()">🔄 Novo Projeto</button>
-            </div>
-        </aside>
-
-        <div id="area3d">
-            <div id="info-status">Modo: <strong>3D Livre</strong> | Dica: Pressione <strong>R</strong> para rotacionar</div>
+    <!-- BARRA INFERIOR DE NAVEGAÇÃO -->
+    <div class="barra-inferior">
+        <div class="grupo-controles">
+            <button class="btn-inf">⚙️</button>
+        </div>
+        <div class="grupo-controles">
+            <button class="btn-inf">2D</button>
+            <button class="btn-inf ativo">3D</button>
+            <button class="btn-inf">👤</button>
+        </div>
+        <div class="grupo-controles">
+            <button class="btn-inf">➕</button>
+            <button class="btn-inf">➖</button>
         </div>
     </div>
 
     <script>
-        let cena;
-        let camera, camera3DOriginal, camera2D;
-        let renderizador;
-        let controles;
+        let cena, camera, renderizador, controles;
 
-        let ambiente;
-        let piso;
+        function iniciar() {
+            const container = document.getElementById("area3d");
 
-        let larguraAmbiente = 10;
-        let comprimentoAmbiente = 8;
-
-        let moveis = [];
-        let selecionado = null;
-
-        let raycaster;
-        let mouse;
-        let arrastando = false;
-        let modoCamera = '3d';
-
-        /* =====================================================
-           INICIAR THREE.JS
-        ===================================================== */
-        function iniciar3D() {
-            const area = document.getElementById("area3d");
-
-            /* CENA */
+            // Criar Cena
             cena = new THREE.Scene();
-            cena.background = new THREE.Color(0xf5f2ed); // Fundo bege suave e acolhedor
+            cena.background = new THREE.Color(0xf4f4f4);
 
-            /* CÂMERA 3D */
-            camera3DOriginal = new THREE.PerspectiveCamera(
-                50,
-                area.clientWidth / area.clientHeight,
-                0.1,
-                1000
-            );
-            camera3DOriginal.position.set(12, 11, 14);
-            camera = camera3DOriginal;
+            // Criar Câmera
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 6, 8);
 
-            /* CONFIGURAR CÂMERA 2D */
-            configurarCamera2D();
-
-            /* RENDERIZADOR */
+            // Criar Renderizador
             renderizador = new THREE.WebGLRenderer({ antialias: true });
-            renderizador.setSize(area.clientWidth, area.clientHeight);
+            renderizador.setSize(container.clientWidth, container.clientHeight);
             renderizador.shadowMap.enabled = true;
-            area.appendChild(renderizador.domElement);
+            container.appendChild(renderizador.domElement);
 
-            /* CONTROLES */
+            // Controles da Câmera
             controles = new THREE.OrbitControls(camera, renderizador.domElement);
             controles.enableDamping = true;
-            controles.target.set(0, 0, 0);
+            controles.target.set(0, 1, 0);
 
-            /* LUZ */
-            const luzAmbiente = new THREE.AmbientLight(0xfff8f0, 0.8);
+            // Iluminação
+            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.7);
             cena.add(luzAmbiente);
 
-            const luz = new THREE.DirectionalLight(0xfff5ee, 0.7);
-            luz.position.set(5, 15, 5);
-            luz.castShadow = true;
-            cena.add(luz);
+            const luzDirecional = new THREE.DirectionalLight(0xffffff, 0.5);
+            luzDirecional.position.set(5, 10, 7);
+            cena.add(luzDirecional);
 
-            /* RAYCASTER */
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
+            // Grade de Fundo (Piso Técnico Estilo Grid)
+            const gridHelper = new THREE.GridHelper(30, 30, 0xcccccc, 0xe2e2e2);
+            gridHelper.position.y = 0;
+            cena.add(gridHelper);
 
-            criarAmbiente();
+            // Avatar de Escala Central (Simulando a pessoa da imagem)
+            criarAvatarCentral();
 
-            /* EVENTOS */
-            window.addEventListener("resize", ajustarTela);
-            area.addEventListener("pointerdown", selecionarObjeto);
-            area.addEventListener("pointermove", moverObjeto);
-            area.addEventListener("pointerup", soltarObjeto);
-
-            // Evento de rotação com a tecla R
-            window.addEventListener("keydown", (event) => {
-                if (event.key.toLowerCase() === "r" && selecionado) {
-                    selecionado.rotation.y += Math.PI / 4; // Gira 45 graus
-                }
-            });
-
+            // Loop de Animação
             animar();
+
+            // Ajustar tela ao redimensionar a janela
+            window.addEventListener("resize", onWindowResize);
         }
 
-        /* =====================================================
-           CÂMERA 2D (PLANTA BAIXA)
-        ===================================================== */
-        function configurarCamera2D() {
-            const area = document.getElementById("area3d");
-            const aspecto = area ? area.clientWidth / area.clientHeight : 1;
-            const tamanho = Math.max(larguraAmbiente, comprimentoAmbiente) * 0.7;
+        function criarAvatarCentral() {
+            const grupoAvatar = new THREE.Group();
 
-            camera2D = new THREE.OrthographicCamera(
-                -tamanho * aspecto, tamanho * aspecto,
-                tamanho, -tamanho,
-                0.1, 1000
-            );
-            camera2D.position.set(0, 20, 0);
-            camera2D.lookAt(0, 0, 0);
+            // Corpo (Camisa azulada)
+            const matCorpo = new THREE.MeshStandardMaterial({ color: 0x9fa8da, roughness: 0.5 });
+            const geoCorpo = new THREE.CylinderGeometry(0.25, 0.3, 0.7, 16);
+            const corpo = new THREE.Mesh(geoCorpo, matCorpo);
+            corpo.position.y = 0.85;
+            grupoAvatar.add(corpo);
+
+            // Cabeça
+            const matCabeca = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+            const geoCabeca = new THREE.SphereGeometry(0.18, 16, 16);
+            const cabeca = new THREE.Mesh(geoCabeca, matCabeca);
+            cabeca.position.y = 1.35;
+            grupoAvatar.add(cabeca);
+
+            // Calça
+            const matCalca = new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.6 });
+            const geoCalca = new THREE.CylinderGeometry(0.22, 0.22, 0.6, 16);
+            const calca = new THREE.Mesh(geoCalca, matCalca);
+            calca.position.y = 0.35;
+            grupoAvatar.add(calca);
+
+            // Base de Seleção (Círculo Branco com setas simuladas)
+            const matBase = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const geoBase = new THREE.RingGeometry(0.4, 0.5, 32);
+            const base = new THREE.Mesh(geoBase, matBase);
+            base.rotation.x = -Math.PI / 2;
+            base.position.y = 0.01;
+            grupoAvatar.add(base);
+
+            cena.add(grupoAvatar);
         }
 
-        function alternarVisao() {
-            const statusDiv = document.getElementById("info-status");
-            if (modoCamera === '3d') {
-                modoCamera = '2d';
-                configurarCamera2D();
-                camera = camera2D;
-                controles.object = camera2D;
-                if (statusDiv) statusDiv.innerHTML = "Modo: <strong>2D (Planta Baixa)</strong>";
-            } else {
-                modoCamera = '3d';
-                camera = camera3DOriginal;
-                controles.object = camera3DOriginal;
-                if (statusDiv) statusDiv.innerHTML = "Modo: <strong>3D Livre</strong> | Dica: Pressione <strong>R</strong> para rotacionar";
-            }
-        }
-
-        /* =====================================================
-           CRIAR AMBIENTE (PISO E PAREDES TONS MARROM/BEGE/BRANCO)
-        ===================================================== */
-        function criarAmbiente() {
-            if (ambiente) {
-                cena.remove(ambiente);
-            }
-
-            ambiente = new THREE.Group();
-
-            /* PISO (Amadeirado claro / Bege limpo) */
-            const geometriaPiso = new THREE.BoxGeometry(larguraAmbiente, 0.2, comprimentoAmbiente);
-            const materialPiso = new THREE.MeshStandardMaterial({ color: 0xf5f0eb, roughness: 0.7 });
-            piso = new THREE.Mesh(geometriaPiso, materialPiso);
-            piso.position.y = -0.1;
-            piso.receiveShadow = true;
-            ambiente.add(piso);
-
-            /* MATERIAL DAS PAREDES (Branco/Marfim elegante) */
-            const materialParede = new THREE.MeshStandardMaterial({ color: 0xfaf9f6, roughness: 0.9 });
-
-            /* PAREDE FUNDO */
-            const paredeFundo = new THREE.Mesh(
-                new THREE.BoxGeometry(larguraAmbiente, 3, 0.2),
-                materialParede
-            );
-            paredeFundo.position.set(0, 1.5, -comprimentoAmbiente / 2);
-            paredeFundo.castShadow = true;
-            ambiente.add(paredeFundo);
-
-            /* PAREDE ESQUERDA */
-            const paredeEsquerda = new THREE.Mesh(
-                new THREE.BoxGeometry(0.2, 3, comprimentoAmbiente),
-                materialParede
-            );
-            paredeEsquerda.position.set(-larguraAmbiente / 2, 1.5, 0);
-            paredeEsquerda.castShadow = true;
-            ambiente.add(paredeEsquerda);
-
-            /* PAREDE DIREITA */
-            const paredeDireita = new THREE.Mesh(
-                new THREE.BoxGeometry(0.2, 3, comprimentoAmbiente),
-                materialParede
-            );
-            paredeDireita.position.set(larguraAmbiente / 2, 1.5, 0);
-            paredeDireita.castShadow = true;
-            ambiente.add(paredeDireita);
-
-            cena.add(ambiente);
-
-            if (modoCamera === '2d') {
-                configurarCamera2D();
-            }
-        }
-
-        /* =====================================================
-           ATUALIZAR TAMANHO
-        ===================================================== */
-        function atualizarAmbiente() {
-            larguraAmbiente = Number(document.getElementById("largura").value);
-            comprimentoAmbiente = Number(document.getElementById("comprimento").value);
-            criarAmbiente();
-        }
-
-        /* =====================================================
-           CRIAR MÓVEIS REALISTAS (COMPOSTOS E DETALHADOS)
-        ===================================================== */
-        function adicionarMovel(tipo) {
-            let movelGrupo = new THREE.Group();
-            let largura = 1, altura = 1, profundidade = 1;
-            
-            // Materiais refinados em tons de marrom, madeira e branco
-            const materialMadeira = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7, metalness: 0.1 });
-            const materialTecidoClaro = new THREE.MeshStandardMaterial({ color: 0xfdfbf7, roughness: 0.9, metalness: 0.05 });
-            const materialEstofado = new THREE.MeshStandardMaterial({ color: 0xa1887f, roughness: 0.85, metalness: 0.05 });
-            const materialMetal = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.3, metalness: 0.6 });
-
-            switch (tipo) {
-                case "cama": {
-                    largura = 2.5; altura = 0.9; profundidade = 4;
-                    
-                    // Base da Cama (Madeira)
-                    const baseGeo = new THREE.BoxGeometry(2.5, 0.4, 4);
-                    const baseMesh = new THREE.Mesh(baseGeo, materialMadeira);
-                    baseMesh.position.y = 0.2;
-                    baseMesh.castShadow = true;
-                    baseMesh.receiveShadow = true;
-                    movelGrupo.add(baseMesh);
-
-                    // Colchão (Branco/Linho)
-                    const colchaoGeo = new THREE.BoxGeometry(2.4, 0.4, 3.8);
-                    const colchaoMesh = new THREE.Mesh(colchaoGeo, materialTecidoClaro);
-                    colchaoMesh.position.y = 0.6;
-                    colchaoMesh.castShadow = true;
-                    movelGrupo.add(colchaoMesh);
-
-                    // Cabeceira
-                    const cabecGeo = new THREE.BoxGeometry(2.5, 1.2, 0.2);
-                    const cabecMesh = new THREE.Mesh(cabecGeo, materialMadeira);
-                    cabecMesh.position.set(0, 0.6, -1.9);
-                    cabecMesh.castShadow = true;
-                    movelGrupo.add(cabecMesh);
-                    break;
-                }
-
-                case "sofa": {
-                    largura = 3; altura = 0.9; profundidade = 1.2;
-                    
-                    // Assento
-                    const assentoGeo = new THREE.BoxGeometry(3, 0.4, 1.1);
-                    const assentoMesh = new THREE.Mesh(assentoGeo, materialEstofado);
-                    assentoMesh.position.y = 0.3;
-                    assentoMesh.castShadow = true;
-                    movelGrupo.add(assentoMesh);
-
-                    // Encosto
-                    const encostoGeo = new THREE.BoxGeometry(3, 0.7, 0.3);
-                    const encostoMesh = new THREE.Mesh(encostoGeo, materialEstofado);
-                    encostoMesh.position.set(0, 0.75, -0.4);
-                    encostoMesh.castShadow = true;
-                    movelGrupo.add(encostoMesh);
-                    break;
-                }
-
-                case "mesa": {
-                    largura = 2; altura = 1; profundidade = 1;
-
-                    // Tampo da Mesa (Madeira)
-                    const tampoGeo = new THREE.BoxGeometry(2, 0.1, 1);
-                    const tampoMesh = new THREE.Mesh(tampoGeo, materialMadeira);
-                    tampoMesh.position.y = 0.95;
-                    tampoMesh.castShadow = true;
-                    tampoMesh.receiveShadow = true;
-                    movelGrupo.add(tampoMesh);
-
-                    // Pés da Mesa
-                    const peGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.9);
-                    const posicoesPes = [
-                        [-0.9, 0.45, 0.4], [0.9, 0.45, 0.4],
-                        [-0.9, 0.45, -0.4], [0.9, 0.45, -0.4]
-                    ];
-                    posicoesPes.forEach(pos => {
-                        const peMesh = new THREE.Mesh(peGeo, materialMetal);
-                        peMesh.position.set(...pos);
-                        peMesh.castShadow = true;
-                        movelGrupo.add(peMesh);
-                    });
-                    break;
-                }
-
-                case "cadeira": {
-                    largura = 0.8; altura = 1; profundidade = 0.8;
-
-                    // Assento
-                    const assentoGeo = new THREE.BoxGeometry(0.7, 0.1, 0.7);
-                    const assentoMesh = new THREE.Mesh(assentoGeo, materialMadeira);
-                    assentoMesh.position.y = 0.5;
-                    assentoMesh.castShadow = true;
-                    movelGrupo.add(assentoMesh);
-
-                    // Encosto
-                    const encostoGeo = new THREE.BoxGeometry(0.7, 0.5, 0.1);
-                    const encostoMesh = new THREE.Mesh(encostoGeo, materialMadeira);
-                    encostoMesh.position.set(0, 0.8, -0.3);
-                    encostoMesh.castShadow = true;
-                    movelGrupo.add(encostoMesh);
-
-                    // Pés
-                    const peGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.5);
-                    const posicoesPes = [
-                        [-0.3, 0.25, 0.3], [0.3, 0.25, 0.3],
-                        [-0.3, 0.25, -0.3], [0.3, 0.25, -0.3]
-                    ];
-                    posicoesPes.forEach(pos => {
-                        const peMesh = new THREE.Mesh(peGeo, materialMetal);
-                        peMesh.position.set(...pos);
-                        peMesh.castShadow = true;
-                        movelGrupo.add(peMesh);
-                    });
-                    break;
-                }
-
-                case "armario": {
-                    largura = 2; altura = 2.5; profundidade = 0.7;
-
-                    // Corpo do armário
-                    const corpoGeo = new THREE.BoxGeometry(2, 2.5, 0.7);
-                    const corpoMesh = new THREE.Mesh(corpoGeo, materialMadeira);
-                    corpoMesh.position.y = 1.25;
-                    corpoMesh.castShadow = true;
-                    corpoMesh.receiveShadow = true;
-                    movelGrupo.add(corpoMesh);
-
-                    // Divisão das Portas
-                    const portaGeo = new THREE.BoxGeometry(0.02, 2.4, 0.72);
-                    const portaMesh = new THREE.Mesh(portaGeo, materialMetal);
-                    portaMesh.position.set(0, 1.25, 0);
-                    movelGrupo.add(portaMesh);
-                    break;
-                }
-            }
-
-            movelGrupo.position.set(0, 0, 0);
-
-            movelGrupo.userData.tipo = tipo;
-            movelGrupo.userData.largura = largura;
-            movelGrupo.userData.altura = altura;
-            movelGrupo.userData.profundidade = profundidade;
-
-            cena.add(movelGrupo);
-            moveis.push(movelGrupo);
-
-            selecionar(movelGrupo);
-        }
-
-        /* =====================================================
-           SELECIONAR
-        ===================================================== */
-        function selecionarObjeto(event) {
-            const rect = renderizador.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const objetos = raycaster.intersectObjects(moveis, true);
-
-            if (objetos.length > 0) {
-                // Acha o grupo pai raiz correspondente ao móvel
-                let objPai = objetos[0].object;
-                while (objPai.parent && objPai.parent !== cena) {
-                    objPai = objPai.parent;
-                }
-                selecionar(objPai);
-                arrastando = true;
-                if (modoCamera === '3d') controles.enabled = false;
-            }
-        }
-
-        function selecionar(objeto) {
-            selecionado = objeto;
-            const infoObjeto = document.getElementById("objetoSelecionado");
-            if (infoObjeto) {
-                infoObjeto.innerHTML = "Selecionado: <strong>" + traduzirNome(objeto.userData.tipo) + "</strong>";
-            }
-        }
-
-        function alterarCorMovel(hexColor) {
-            if (!selecionado) {
-                alert("Selecione um móvel primeiro.");
-                return;
-            }
-            // Altera a cor de todos os meshes filhos que compõem o móvel
-            selecionado.traverse((filho) => {
-                if (filho.isMesh && filho.material) {
-                    filho.material.color.set(hexColor);
-                }
-            });
-        }
-
-        /* =====================================================
-           MOVER OBJETO
-        ===================================================== */
-        function moverObjeto(event) {
-            if (!arrastando || !selecionado) return;
-
-            const rect = renderizador.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-            const ponto = new THREE.Vector3();
-
-            raycaster.ray.intersectPlane(plano, ponto);
-
-            if (ponto) {
-                const metadeX = larguraAmbiente / 2;
-                const metadeZ = comprimentoAmbiente / 2;
-
-                selecionado.position.x = Math.max(-metadeX + 0.5, Math.min(metadeX - 0.5, ponto.x));
-                selecionado.position.z = Math.max(-metadeZ + 0.5, Math.min(metadeZ - 0.5, ponto.z));
-            }
-        }
-
-        function soltarObjeto() {
-            arrastando = false;
-            if (modoCamera === '3d') controles.enabled = true;
-        }
-
-        /* =====================================================
-           REMOVER
-        ===================================================== */
-        function removerSelecionado() {
-            if (!selecionado) {
-                alert("Selecione um móvel primeiro.");
-                return;
-            }
-
-            cena.remove(selecionado);
-            const indice = moveis.indexOf(selecionado);
-            if (indice !== -1) moveis.splice(indice, 1);
-
-            selecionado = null;
-            const infoObjeto = document.getElementById("objetoSelecionado");
-            if (infoObjeto) {
-                infoObjeto.innerHTML = "Nenhum móvel selecionado.";
-            }
-        }
-
-        /* =====================================================
-           TRADUZIR NOME
-        ===================================================== */
-        function traduzirNome(tipo) {
-            const nomes = {
-                cama: "Cama",
-                sofa: "Sofá",
-                mesa: "Mesa",
-                cadeira: "Cadeira",
-                armario: "Armário"
-            };
-            return nomes[tipo] || tipo;
-        }
-
-        /* =====================================================
-           ANIMAÇÃO
-        ===================================================== */
         function animar() {
             requestAnimationFrame(animar);
-            if (controles && modoCamera === '3d') controles.update();
-            if (renderizador) renderizador.render(cena, camera);
+            controles.update();
+            renderizador.render(cena, camera);
         }
 
-        /* =====================================================
-           REDIMENSIONAR
-        ===================================================== */
-        function ajustarTela() {
-            const area = document.getElementById("area3d");
-            if (!camera || !renderizador || !area) return;
-
-            if (modoCamera === '3d') {
-                camera.aspect = area.clientWidth / area.clientHeight;
-                camera.updateProjectionMatrix();
-            } else {
-                configurarCamera2D();
-            }
-
-            renderizador.setSize(area.clientWidth, area.clientHeight);
+        function onWindowResize() {
+            const container = document.getElementById("area3d");
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderizador.setSize(container.clientWidth, container.clientHeight);
         }
 
-        /* =====================================================
-           CRIAR PROJETO
-        ===================================================== */
-        function criarProjeto(tipo) {
-            const telaInicio = document.getElementById("inicio");
-            const editor = document.getElementById("editor");
-            const tipoProjeto = document.getElementById("tipoProjeto");
-
-            if (telaInicio) telaInicio.style.display = "none";
-            if (editor) editor.classList.remove("escondido");
-            if (tipoProjeto) {
-                tipoProjeto.textContent = tipo === "casa" ? "🏠 Projeto de casa" : "🛏️ Projeto de cômodo";
-            }
-            iniciar3D();
-        }
-
-        /* =====================================================
-           NOVO PROJETO
-        ===================================================== */
-        function novoProjeto() {
-            if (!confirm("Começar um novo projeto?")) return;
-            location.reload();
-        }
-
-        /* =====================================================
-           SALVAR PROJETO
-        ===================================================== */
-        function salvarProjeto() {
-            const dados = {
-                largura: larguraAmbiente,
-                comprimento: comprimentoAmbiente,
-                moveis: moveis.map(movel => ({
-                    tipo: movel.userData.tipo,
-                    x: movel.position.x,
-                    y: movel.position.y,
-                    z: movel.position.z,
-                    rotacao: movel.rotation.y
-                }))
-            };
-
-            localStorage.setItem("meuProjeto3D", JSON.stringify(dados));
-            alert("Projeto salvo com sucesso! 💙");
-        }
+        // Iniciar aplicação ao carregar
+        window.onload = iniciar;
     </script>
 </body>
 </html>
