@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador 2D e 3D - Profissional</title>
+    <title>Planejador 2D e 3D - Estilo Profissional</title>
     <style>
         * {
             box-sizing: border-box;
@@ -131,7 +131,7 @@
             gap: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             z-index: 10;
-            width: 160px;
+            width: 170px;
         }
 
         .submenu-2d.visivel {
@@ -153,7 +153,7 @@
             background: #f0f0f0;
         }
 
-        /* PAINEL DE MEDIDAS DA SALA (Estilo da Imagem) */
+        /* PAINEL DE METROS QUADRADOS E COTAS */
         .painel-medidas {
             position: absolute;
             top: 15px;
@@ -258,23 +258,26 @@
         <button class="btn-icone-topo">Ajuda</button>
     </div>
 
-    <!-- MENU LATERAL COM ABA 2D -->
+    <!-- MENU LATERAL -->
     <div class="menu-lateral">
-        <button class="btn-lateral ativo" id="btnMenu2D" onclick="alternarSubmenu2D()" title="Ferramentas 2D / Paredes">2D</button>
-        <button class="btn-lateral" title="Móveis">Móv</button>
+        <button class="btn-lateral ativo" id="btnMenu2D" onclick="alternarSubmenu2D()" title="Planta / Paredes">Planta</button>
+        <button class="btn-lateral" title="Zoom">Zoom</button>
+        <button class="btn-lateral" title="Moveis">Móveis</button>
+        <button class="btn-lateral" title="Favoritos">Fav</button>
+        <button class="btn-lateral" title="Catalogo">Cat</button>
         <button class="btn-lateral" title="Medidas">Med</button>
-        <button class="btn-lateral" title="Câmera">Cam</button>
+        <button class="btn-lateral" title="Foto">Foto</button>
     </div>
 
     <!-- SUBMENU EXPANSÍVEL DE FERRAMENTAS 2D -->
     <div class="submenu-2d visivel" id="submenu2D">
-        <strong style="font-size: 0.8rem; color: #666; margin-bottom: 4px; display:block;">Paredes e Cômodos</strong>
-        <button onclick="definirFerramenta('linha')">Desenhar Linha</button>
-        <button onclick="definirFerramenta('retangulo')">Criar Sala Retangular</button>
-        <button onclick="limparAmbiente2D()">Reiniciar Desenho</button>
+        <strong style="font-size: 0.75rem; color: #666; margin-bottom: 4px; display:block;">Ferramentas 2D</strong>
+        <button onclick="definirFerramenta('linha')">Desenhar Linhas</button>
+        <button onclick="definirFerramenta('retangulo')">Criar Retângulo</button>
+        <button onclick="limparAmbiente2D()">Reiniciar Planta</button>
     </div>
 
-    <!-- PAINEL DE METROS QUADRADOS E COTAS (Estilo da Referência) -->
+    <!-- PAINEL DE MEDIDAS E METROS QUADRADOS -->
     <div class="painel-medidas" id="painelMedidas">
         <h4>Sala 1 - Planta 2D</h4>
         <div class="info-linha">Área Total: <span id="valArea">20.00 m²</span></div>
@@ -291,7 +294,7 @@
         <div class="grupo-controles">
             <button class="btn-inf ativo" id="modo2DBtn" onclick="mudarModoVisualizacao('2d')">2D</button>
             <button class="btn-inf" id="modo3DBtn" onclick="mudarModoVisualizacao('3d')">3D</button>
-            <button class="btn-inf">Avatar</button>
+            <button class="btn-inf" onclick="focarAvatar()">Avatar</button>
         </div>
         <div class="grupo-controles">
             <button class="btn-inf">+</button>
@@ -304,6 +307,8 @@
         let modoAtual = '2d';
         let ferramentaAtiva = 'retangulo';
         let salaMesh = null;
+        let grupoAvatar = null;
+        let gridHelper2D, gridHelper3D;
 
         function iniciar() {
             const container = document.getElementById("area3d");
@@ -311,7 +316,7 @@
             cena = new THREE.Scene();
             cena.background = new THREE.Color(0xf4f4f4);
 
-            // Câmera Inicial em 2D (Planta Baixa Direta de cima)
+            // Câmera inicial em 2D (Ortográfica estilo planta baixa)
             camera = new THREE.OrthographicCamera(
                 container.clientWidth / -2, container.clientWidth / 2,
                 container.clientHeight / 2, container.clientHeight / -2,
@@ -322,19 +327,33 @@
 
             renderizador = new THREE.WebGLRenderer({ antialias: true });
             renderizador.setSize(container.clientWidth, container.clientHeight);
+            renderizador.shadowMap.enabled = true;
             container.appendChild(renderizador.domElement);
 
             controles = new THREE.OrbitControls(camera, renderizador.domElement);
-            controles.enableRotate = false; // Bloqueia rotação no modo 2D para parecer planta baixa exata
+            controles.enableDamping = true;
+            controles.enableRotate = false; // Bloqueia rotação no modo 2D
 
-            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.9);
+            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.8);
             cena.add(luzAmbiente);
 
-            const gridHelper = new THREE.GridHelper(50, 50, 0xdddddd, 0xeeeeee);
-            gridHelper.position.y = -0.1;
-            cena.add(gridHelper);
+            const luzDirecional = new THREE.DirectionalLight(0xffffff, 0.5);
+            luzDirecional.position.set(5, 10, 7);
+            cena.add(luzDirecional);
 
+            // Grades de referência
+            gridHelper2D = new THREE.GridHelper(50, 50, 0xdddddd, 0xeeeeee);
+            gridHelper2D.position.y = -0.1;
+            cena.add(gridHelper2D);
+
+            gridHelper3D = new THREE.GridHelper(30, 30, 0xcccccc, 0xe2e2e2);
+            gridHelper3D.position.y = 0;
+            gridHelper3D.visible = false;
+            cena.add(gridHelper3D);
+
+            // Construir elementos de sala e avatar
             desenharSalaExemplo();
+            criarAvatarCentral();
 
             animar();
 
@@ -344,13 +363,10 @@
         function desenharSalaExemplo() {
             if (salaMesh) cena.remove(salaMesh);
 
-            // Criando o piso da sala simulando a proporção da imagem (5.6m por 3.57m)
-            const larguraX = 11.2; // Escala proporcional visual
+            const larguraX = 11.2; 
             const profundidadeZ = 7.14;
 
             const geometria = new THREE.PlaneGeometry(larguraX, profundidadeZ);
-            
-            // Textura visual amadeirada simulada por cor elegante
             const material = new THREE.MeshBasicMaterial({ 
                 color: 0xd7ccc8, 
                 side: THREE.DoubleSide 
@@ -361,7 +377,7 @@
             salaMesh.position.set(0, 0, 0);
             cena.add(salaMesh);
 
-            // Adicionando bordas pretas simulando as paredes em 2D
+            // Bordas das paredes em 2D
             const pontosBorda = [
                 new THREE.Vector3(-larguraX/2, 0.05, -profundidadeZ/2),
                 new THREE.Vector3(larguraX/2, 0.05, -profundidadeZ/2),
@@ -375,6 +391,38 @@
             salaMesh.add(linhaBorda);
         }
 
+        function criarAvatarCentral() {
+            grupoAvatar = new THREE.Group();
+
+            const matCorpo = new THREE.MeshStandardMaterial({ color: 0x9fa8da, roughness: 0.5 });
+            const geoCorpo = new THREE.CylinderGeometry(0.25, 0.3, 0.7, 16);
+            const corpo = new THREE.Mesh(geoCorpo, matCorpo);
+            corpo.position.y = 0.85;
+            grupoAvatar.add(corpo);
+
+            const matCabeca = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+            const geoCabeca = new THREE.SphereGeometry(0.18, 16, 16);
+            const cabeca = new THREE.Mesh(geoCabeca, matCabeca);
+            cabeca.position.y = 1.35;
+            grupoAvatar.add(cabeca);
+
+            const matCalca = new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.6 });
+            const geoCalca = new THREE.CylinderGeometry(0.22, 0.22, 0.6, 16);
+            const calca = new THREE.Mesh(geoCalca, matCalca);
+            calca.position.y = 0.35;
+            grupoAvatar.add(calca);
+
+            const matBase = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const geoBase = new THREE.RingGeometry(0.4, 0.5, 32);
+            const base = new THREE.Mesh(geoBase, matBase);
+            base.rotation.x = -Math.PI / 2;
+            base.position.y = 0.01;
+            grupoAvatar.add(base);
+
+            grupoAvatar.visible = false; // Inicialmente oculto no modo 2D puro
+            cena.add(grupoAvatar);
+        }
+
         function alternarSubmenu2D() {
             const submenu = document.getElementById("submenu2D");
             submenu.classList.toggle("visivel");
@@ -382,7 +430,7 @@
 
         function definirFerramenta(ferramenta) {
             ferramentaAtiva = ferramenta;
-            alert("Ferramenta ativa: " + (ferramenta === 'linha' ? "Desenho de Linhas métricas" : "Sala Retangular em metros quadrados"));
+            alert("Ferramenta 2D selecionada: " + (ferramenta === 'linha' ? "Desenhar Linhas" : "Criar Retângulo de Cômodo"));
             alternarSubmenu2D();
         }
 
@@ -407,8 +455,10 @@
                 btn2D.classList.add("ativo");
                 btn3D.classList.remove("ativo");
                 painel.style.display = "block";
+                if (grupoAvatar) grupoAvatar.visible = false;
+                gridHelper2D.visible = true;
+                gridHelper3D.visible = false;
 
-                // Recriar câmera ortográfica focada em planta baixa
                 camera = new THREE.OrthographicCamera(
                     container.clientWidth / -2, container.clientWidth / 2,
                     container.clientHeight / 2, container.clientHeight / -2,
@@ -418,18 +468,29 @@
                 camera.lookAt(0, 0, 0);
                 controles.object = camera;
                 controles.enableRotate = false;
+                controles.target.set(0, 0, 0);
             } else {
                 modoAtual = '3d';
                 btn3D.classList.add("ativo");
                 btn2D.classList.remove("ativo");
                 painel.style.display = "none";
+                if (grupoAvatar) grupoAvatar.visible = true;
+                gridHelper2D.visible = false;
+                gridHelper3D.visible = true;
 
-                // Mudar para câmera perspectiva 3D livre
                 camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-                camera.position.set(0, 12, 15);
-                camera.lookAt(0, 0, 0);
+                camera.position.set(0, 6, 8);
+                camera.lookAt(0, 1, 0);
                 controles.object = camera;
                 controles.enableRotate = true;
+                controles.target.set(0, 1, 0);
+            }
+        }
+
+        function focarAvatar() {
+            if (modoAtual === '3d' && grupoAvatar) {
+                controles.target.copy(grupoAvatar.position);
+                controles.target.y += 1;
             }
         }
 
