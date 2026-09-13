@@ -25,7 +25,7 @@ function iniciar3D() {
 
     /* CENA */
     cena = new THREE.Scene();
-    cena.background = new THREE.Color(0xf5f2ed); // Fundo bege suave e acolhedor
+    cena.background = new THREE.Color(0xeaf8ff);
 
     /* CÂMERA 3D */
     camera3DOriginal = new THREE.PerspectiveCamera(
@@ -52,10 +52,10 @@ function iniciar3D() {
     controles.target.set(0, 0, 0);
 
     /* LUZ */
-    const luzAmbiente = new THREE.AmbientLight(0xfff8f0, 0.8);
+    const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.7);
     cena.add(luzAmbiente);
 
-    const luz = new THREE.DirectionalLight(0xfff5ee, 0.7);
+    const luz = new THREE.DirectionalLight(0xffffff, 0.8);
     luz.position.set(5, 15, 5);
     luz.castShadow = true;
     cena.add(luz);
@@ -116,7 +116,7 @@ function alternarVisao() {
 }
 
 /* =====================================================
-   CRIAR AMBIENTE (PISO E PAREDES TONS MARROM/BEGE/BRANCO)
+   CRIAR AMBIENTE
 ===================================================== */
 function criarAmbiente() {
     if (ambiente) {
@@ -125,16 +125,16 @@ function criarAmbiente() {
 
     ambiente = new THREE.Group();
 
-    /* PISO (Amadeirado claro / Bege limpo) */
+    /* PISO */
     const geometriaPiso = new THREE.BoxGeometry(larguraAmbiente, 0.2, comprimentoAmbiente);
-    const materialPiso = new THREE.MeshStandardMaterial({ color: 0xf5f0eb, roughness: 0.7 });
+    const materialPiso = new THREE.MeshStandardMaterial({ color: 0xffffff });
     piso = new THREE.Mesh(geometriaPiso, materialPiso);
     piso.position.y = -0.1;
     piso.receiveShadow = true;
     ambiente.add(piso);
 
-    /* MATERIAL DAS PAREDES (Branco/Marfim elegante) */
-    const materialParede = new THREE.MeshStandardMaterial({ color: 0xfaf9f6, roughness: 0.9 });
+    /* MATERIAL DAS PAREDES */
+    const materialParede = new THREE.MeshStandardMaterial({ color: 0xbfe8fa });
 
     /* PAREDE FUNDO */
     const paredeFundo = new THREE.Mesh(
@@ -180,154 +180,46 @@ function atualizarAmbiente() {
 }
 
 /* =====================================================
-   CRIAR MÓVEIS REALISTAS (COMPOSTOS E DETALHADOS)
+   CRIAR MÓVEIS
 ===================================================== */
 function adicionarMovel(tipo) {
-    let movelGrupo = new THREE.Group();
-    let largura = 1, altura = 1, profundidade = 1;
-    
-    // Materiais refinados em tons de marrom, madeira e branco
-    const materialMadeira = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7, metalness: 0.1 });
-    const materialTecidoClaro = new THREE.MeshStandardMaterial({ color: 0xfdfbf7, roughness: 0.9, metalness: 0.05 });
-    const materialEstofado = new THREE.MeshStandardMaterial({ color: 0xa1887f, roughness: 0.85, metalness: 0.05 });
-    const materialMetal = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.3, metalness: 0.6 });
+    let largura, altura, profundidade, cor;
 
     switch (tipo) {
-        case "cama": {
-            largura = 2.5; altura = 0.9; profundidade = 4;
-            
-            // Base da Cama (Madeira)
-            const baseGeo = new THREE.BoxGeometry(2.5, 0.4, 4);
-            const baseMesh = new THREE.Mesh(baseGeo, materialMadeira);
-            baseMesh.position.y = 0.2;
-            baseMesh.castShadow = true;
-            baseMesh.receiveShadow = true;
-            movelGrupo.add(baseMesh);
-
-            // Colchão (Branco/Linho)
-            const colchaoGeo = new THREE.BoxGeometry(2.4, 0.4, 3.8);
-            const colchaoMesh = new THREE.Mesh(colchaoGeo, materialTecidoClaro);
-            colchaoMesh.position.y = 0.6;
-            colchaoMesh.castShadow = true;
-            movelGrupo.add(colchaoMesh);
-
-            // Cabeceira
-            const cabecGeo = new THREE.BoxGeometry(2.5, 1.2, 0.2);
-            const cabecMesh = new THREE.Mesh(cabecGeo, materialMadeira);
-            cabecMesh.position.set(0, 0.6, -1.9);
-            cabecMesh.castShadow = true;
-            movelGrupo.add(cabecMesh);
+        case "cama":
+            largura = 2.5; altura = 0.6; profundidade = 4; cor = 0xffffff;
             break;
-        }
-
-        case "sofa": {
-            largura = 3; altura = 0.9; profundidade = 1.2;
-            
-            // Assento
-            const assentoGeo = new THREE.BoxGeometry(3, 0.4, 1.1);
-            const assentoMesh = new THREE.Mesh(assentoGeo, materialEstofado);
-            assentoMesh.position.y = 0.3;
-            assentoMesh.castShadow = true;
-            movelGrupo.add(assentoMesh);
-
-            // Encosto
-            const encostoGeo = new THREE.BoxGeometry(3, 0.7, 0.3);
-            const encostoMesh = new THREE.Mesh(encostoGeo, materialEstofado);
-            encostoMesh.position.set(0, 0.75, -0.4);
-            encostoMesh.castShadow = true;
-            movelGrupo.add(encostoMesh);
+        case "sofa":
+            largura = 3; altura = 1.2; profundidade = 1.2; cor = 0x8ed0f5;
             break;
-        }
-
-        case "mesa": {
-            largura = 2; altura = 1; profundidade = 1;
-
-            // Tampo da Mesa (Madeira)
-            const tampoGeo = new THREE.BoxGeometry(2, 0.1, 1);
-            const tampoMesh = new THREE.Mesh(tampoGeo, materialMadeira);
-            tampoMesh.position.y = 0.95;
-            tampoMesh.castShadow = true;
-            tampoMesh.receiveShadow = true;
-            movelGrupo.add(tampoMesh);
-
-            // Pés da Mesa
-            const peGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.9);
-            const posicoesPes = [
-                [-0.9, 0.45, 0.4], [0.9, 0.45, 0.4],
-                [-0.9, 0.45, -0.4], [0.9, 0.45, -0.4]
-            ];
-            posicoesPes.forEach(pos => {
-                const peMesh = new THREE.Mesh(peGeo, materialMetal);
-                peMesh.position.set(...pos);
-                peMesh.castShadow = true;
-                movelGrupo.add(peMesh);
-            });
+        case "mesa":
+            largura = 2; altura = 1; profundidade = 1; cor = 0xddebf2;
             break;
-        }
-
-        case "cadeira": {
-            largura = 0.8; altura = 1; profundidade = 0.8;
-
-            // Assento
-            const assentoGeo = new THREE.BoxGeometry(0.7, 0.1, 0.7);
-            const assentoMesh = new THREE.Mesh(assentoGeo, materialMadeira);
-            assentoMesh.position.y = 0.5;
-            assentoMesh.castShadow = true;
-            movelGrupo.add(assentoMesh);
-
-            // Encosto
-            const encostoGeo = new THREE.BoxGeometry(0.7, 0.5, 0.1);
-            const encostoMesh = new THREE.Mesh(encostoGeo, materialMadeira);
-            encostoMesh.position.set(0, 0.8, -0.3);
-            encostoMesh.castShadow = true;
-            movelGrupo.add(encostoMesh);
-
-            // Pés
-            const peGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.5);
-            const posicoesPes = [
-                [-0.3, 0.25, 0.3], [0.3, 0.25, 0.3],
-                [-0.3, 0.25, -0.3], [0.3, 0.25, -0.3]
-            ];
-            posicoesPes.forEach(pos => {
-                const peMesh = new THREE.Mesh(peGeo, materialMetal);
-                peMesh.position.set(...pos);
-                peMesh.castShadow = true;
-                movelGrupo.add(peMesh);
-            });
+        case "cadeira":
+            largura = 0.8; altura = 1; profundidade = 0.8; cor = 0x75c4ee;
             break;
-        }
-
-        case "armario": {
-            largura = 2; altura = 2.5; profundidade = 0.7;
-
-            // Corpo do armário
-            const corpoGeo = new THREE.BoxGeometry(2, 2.5, 0.7);
-            const corpoMesh = new THREE.Mesh(corpoGeo, materialMadeira);
-            corpoMesh.position.y = 1.25;
-            corpoMesh.castShadow = true;
-            corpoMesh.receiveShadow = true;
-            movelGrupo.add(corpoMesh);
-
-            // Divisão das Portas
-            const portaGeo = new THREE.BoxGeometry(0.02, 2.4, 0.72);
-            const portaMesh = new THREE.Mesh(portaGeo, materialMetal);
-            portaMesh.position.set(0, 1.25, 0);
-            movelGrupo.add(portaMesh);
+        case "armario":
+            largura = 2; altura = 2.5; profundidade = 0.7; cor = 0xb8dff2;
             break;
-        }
     }
 
-    movelGrupo.position.set(0, 0, 0);
+    const geometria = new THREE.BoxGeometry(largura, altura, profundidade);
+    const material = new THREE.MeshStandardMaterial({ color: cor });
+    const movel = new THREE.Mesh(geometria, material);
 
-    movelGrupo.userData.tipo = tipo;
-    movelGrupo.userData.largura = largura;
-    movelGrupo.userData.altura = altura;
-    movelGrupo.userData.profundidade = profundidade;
+    movel.position.set(0, altura / 2, 0);
+    movel.castShadow = true;
+    movel.receiveShadow = true;
 
-    cena.add(movelGrupo);
-    moveis.push(movelGrupo);
+    movel.userData.tipo = tipo;
+    movel.userData.largura = largura;
+    movel.userData.altura = altura;
+    movel.userData.profundidade = profundidade;
 
-    selecionar(movelGrupo);
+    cena.add(movel);
+    moveis.push(movel);
+
+    selecionar(movel);
 }
 
 /* =====================================================
@@ -339,14 +231,10 @@ function selecionarObjeto(event) {
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const objetos = raycaster.intersectObjects(moveis, true);
+    const objetos = raycaster.intersectObjects(moveis);
 
     if (objetos.length > 0) {
-        let objPai = objetos[0].object;
-        while (objPai.parent && objPai.parent !== cena) {
-            objPai = objPai.parent;
-        }
-        selecionar(objPai);
+        selecionar(objetos[0].object);
         arrastando = true;
         if (modoCamera === '3d') controles.enabled = false;
     }
@@ -358,18 +246,15 @@ function selecionar(objeto) {
     if (infoObjeto) {
         infoObjeto.innerHTML = "Selecionado: <strong>" + traduzirNome(objeto.userData.tipo) + "</strong>";
     }
+    const inputCor = document.getElementById("corMovel");
+    if (inputCor) {
+        inputCor.value = "#" + objeto.material.color.getHexString();
+    }
 }
 
 function alterarCorMovel(hexColor) {
-    if (!selecionado) {
-        alert("Selecione um móvel primeiro.");
-        return;
-    }
-    selecionado.traverse((filho) => {
-        if (filho.isMesh && filho.material) {
-            filho.material.color.set(hexColor);
-        }
-    });
+    if (!selecionado) return;
+    selecionado.material.color.set(hexColor);
 }
 
 /* =====================================================
@@ -498,7 +383,8 @@ function salvarProjeto() {
             x: movel.position.x,
             y: movel.position.y,
             z: movel.position.z,
-            rotacao: movel.rotation.y
+            rotacao: movel.rotation.y,
+            cor: movel.material.color.getHexString()
         }))
     };
 
