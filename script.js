@@ -3,7 +3,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     const body = document.body;
-
     const sidebar = document.getElementById("sidebar");
     const mobileMenu = document.getElementById("mobileMenu");
 
@@ -188,7 +187,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document
             .querySelectorAll(".modal-container.open")
             .forEach((modal) => {
+
                 modal.classList.remove("open");
+
             });
 
         document.body.style.overflow = "";
@@ -325,14 +326,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 icon.classList.remove("fa-regular");
                 icon.classList.add("fa-solid");
 
-                showToast("Projeto adicionado aos favoritos.");
+                showToast(
+                    "Projeto adicionado aos favoritos."
+                );
 
             } else {
 
                 icon.classList.remove("fa-solid");
                 icon.classList.add("fa-regular");
 
-                showToast("Projeto removido dos favoritos.");
+                showToast(
+                    "Projeto removido dos favoritos."
+                );
 
             }
 
@@ -364,11 +369,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================
-       FILTROS
+       FILTROS DE PROJETOS
     ========================== */
 
     const filterButtons =
-        document.querySelectorAll(".filter-bar .filter-button");
+        document.querySelectorAll(
+            ".filter-bar .filter-button"
+        );
 
     const allProjectCards =
         document.querySelectorAll(
@@ -413,6 +420,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
+
+    /* ==========================
+       FILTROS DE INSPIRAÇÃO
+    ========================== */
 
     const inspirationFilters =
         document.querySelectorAll(
@@ -589,7 +600,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 .trim();
 
         if (!email) {
+
             showToast("Digite seu e-mail.");
+
             return;
         }
 
@@ -653,6 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ) {
 
                 card.style.display = "";
+
                 found = true;
 
             } else {
@@ -693,7 +707,9 @@ document.addEventListener("DOMContentLoaded", () => {
             document
                 .querySelectorAll(".project-card")
                 .forEach((card) => {
+
                     card.style.display = "";
+
                 });
 
         }
