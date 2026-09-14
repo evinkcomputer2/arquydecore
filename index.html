@@ -3,54 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projeto de Cômodo</title>
+    <title>ArquyDecore - Arquitetura e Decoração</title>
     <link rel="stylesheet" href="style.css">
-
-    <!-- Bibliotecas do Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
+
 <body>
 
-    <!-- Barra Lateral -->
-    <div class="sidebar">
-        <h2>Projeto de cômodo</h2>
-
-        <div class="form-group">
-            <h3>Dimensões do Ambiente (Metros)</h3>
-            <label>Largura:</label>
-            <input type="number" id="inputLargura" value="10" min="1" max="50" oninput="atualizarAmbiente()">
-            
-            <label style="margin-top: 5px;">Comprimento:</label>
-            <input type="number" id="inputComprimento" value="8" min="1" max="50" oninput="atualizarAmbiente()">
+    <header class="navbar">
+        <div class="logo">
+            <span>ARQ</span>UYDECORE
         </div>
 
-        <div>
-            <h3>Adicionar Móveis</h3>
-            <div class="grid-moveis">
-                <button class="btn-movel" onclick="adicionarMovel('cama')">🛏️ Cama</button>
-                <button class="btn-movel" onclick="adicionarMovel('sofa')">🛋️ Sofá</button>
-                <button class="btn-movel" onclick="adicionarMovel('mesa')">🪵 Mesa</button>
-                <button class="btn-movel" onclick="adicionarMovel('cadeira')">chair️ Cadeira</button>
-                <button class="btn-movel btn-full" onclick="adicionarMovel('armario')">🚪 Armário</button>
+        <nav>
+            <a href="#inicio">Início</a>
+            <a href="#sobre">Sobre</a>
+            <button class="login-btn">Entrar</button>
+        </nav>
+    </header>
+
+    <main>
+
+        <section class="hero" id="inicio">
+
+            <div class="hero-text">
+                <p class="tag">ARQUITETURA • DESIGN • CRIATIVIDADE</p>
+
+                <h1>
+                    Crie sua casa.
+                    <br>
+                    <span>Do seu jeito.</span>
+                </h1>
+
+                <p class="description">
+                    Planeje ambientes, crie plantas em 2D e visualize
+                    seus projetos em 3D de forma simples e intuitiva.
+                </p>
+
+                <button class="create-btn" onclick="abrirProjeto()">
+                    + Criar novo projeto
+                </button>
             </div>
-        </div>
 
-        <div>
-            <h3>Personalização</h3>
-            <label>Cor Principal do Móvel:</label>
-            <input type="color" id="corMovel" value="#8d6e63">
-        </div>
+            <div class="hero-card">
+                <div class="fake-house">
+                    <div class="room room1">Sala</div>
+                    <div class="room room2">Quarto</div>
+                    <div class="room room3">Cozinha</div>
+                    <div class="room room4">Banheiro</div>
+                </div>
 
-        <button class="btn-acao" onclick="alternarVisao()">Alternar Visão (2D / 3D)</button>
-    </div>
+                <div class="card-info">
+                    <strong>Meu primeiro projeto</strong>
+                    <span>Planta residencial • 200 m²</span>
+                </div>
+            </div>
 
-    <!-- Área Gráfica 3D / 2D -->
-    <div class="main-content">
-        <div class="top-right-bar" id="modoTexto">Modo: 2D (Planta Baixa)</div>
-        <div id="area3d"></div>
-    </div>
+        </section>
+
+        <section class="features" id="sobre">
+
+            <h2>Tudo para criar seu projeto</h2>
+
+            <div class="feature-grid">
+
+                <div class="feature">
+                    <div class="icon">📐</div>
+                    <h3>Planta 2D</h3>
+                    <p>
+                        Desenhe seus cômodos e visualize
+                        automaticamente suas medidas.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="icon">🏠</div>
+                    <h3>Visualização 3D</h3>
+                    <p>
+                        Transforme sua planta em uma estrutura
+                        tridimensional.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="icon">📏</div>
+                    <h3>Medidas automáticas</h3>
+                    <p>
+                        Veja comprimento, largura, altura e
+                        área do ambiente.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <strong>ARQUYDECORE</strong>
+        <p>Arquitetura ao alcance da sua criatividade.</p>
+    </footer>
 
     <script src="script.js"></script>
+
 </body>
 </html>
