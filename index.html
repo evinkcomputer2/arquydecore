@@ -2,107 +2,1515 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArquyDecore - Arquitetura e Decoração</title>
-    <link rel="stylesheet" href="style.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="NOVAÉ DESIGN - Plataforma profissional para criar, organizar e compartilhar projetos de interiores."
+    >
+
+    <title>NOVAÉ DESIGN | Projetos de interiores</title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 </head>
 
 <body>
 
-    <header class="navbar">
-        <div class="logo">
-            <span>ARQ</span>UYDECORE
-        </div>
+    <div class="app">
 
-        <nav>
-            <a href="#inicio">Início</a>
-            <a href="#sobre">Sobre</a>
-            <button class="login-btn">Entrar</button>
-        </nav>
-    </header>
+        <!-- SIDEBAR -->
 
-    <main>
+        <aside class="sidebar" id="sidebar">
 
-        <section class="hero" id="inicio">
+            <div class="brand">
 
-            <div class="hero-text">
-                <p class="tag">ARQUITETURA • DESIGN • CRIATIVIDADE</p>
+                <a href="#" class="brand-link" data-page="inicio">
 
-                <h1>
-                    Crie sua casa.
-                    <br>
-                    <span>Do seu jeito.</span>
-                </h1>
+                    <svg
+                        class="brand-logo"
+                        viewBox="0 0 120 120"
+                        aria-label="NOVAÉ DESIGN"
+                    >
+                        <defs>
+                            <linearGradient
+                                id="logoGradient"
+                                x1="0%"
+                                y1="0%"
+                                x2="100%"
+                                y2="100%"
+                            >
+                                <stop offset="0%" />
+                                <stop offset="100%" />
+                            </linearGradient>
+                        </defs>
 
-                <p class="description">
-                    Planeje ambientes, crie plantas em 2D e visualize
-                    seus projetos em 3D de forma simples e intuitiva.
+                        <rect
+                            x="10"
+                            y="10"
+                            width="100"
+                            height="100"
+                            rx="28"
+                            class="logo-background"
+                        />
+
+                        <path
+                            d="M35 78V42L62 72V42"
+                            class="logo-line"
+                        />
+
+                        <path
+                            d="M76 42V78"
+                            class="logo-line"
+                        />
+
+                        <path
+                            d="M76 42L91 42L91 78L76 78"
+                            class="logo-line"
+                        />
+                    </svg>
+
+                    <div class="brand-text">
+                        <strong>NOVAÉ</strong>
+                        <span>DESIGN</span>
+                    </div>
+
+                </a>
+
+            </div>
+
+            <nav class="sidebar-navigation">
+
+                <p class="navigation-title">
+                    PRINCIPAL
                 </p>
 
-                <button class="create-btn" onclick="abrirProjeto()">
-                    + Criar novo projeto
+                <button
+                    class="nav-item active"
+                    data-page="inicio"
+                >
+                    <i class="fa-solid fa-house"></i>
+                    <span>Início</span>
                 </button>
+
+                <button
+                    class="nav-item"
+                    data-page="projetos"
+                >
+                    <i class="fa-solid fa-cubes"></i>
+                    <span>Meus projetos</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="inspiracao"
+                >
+                    <i class="fa-regular fa-compass"></i>
+                    <span>Inspiração</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="favoritos"
+                >
+                    <i class="fa-regular fa-heart"></i>
+                    <span>Favoritos</span>
+                </button>
+
+                <p class="navigation-title">
+                    CONTA
+                </p>
+
+                <button
+                    class="nav-item"
+                    data-page="perfil"
+                >
+                    <i class="fa-regular fa-user"></i>
+                    <span>Meu perfil</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="configuracoes"
+                >
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Configurações</span>
+                </button>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-help">
+
+                    <div class="help-icon">
+                        <i class="fa-regular fa-circle-question"></i>
+                    </div>
+
+                    <div>
+                        <strong>Precisa de ajuda?</strong>
+                        <span>Central de suporte</span>
+                    </div>
+
+                </div>
+
+                <button
+                    class="logout-button"
+                    id="logoutButton"
+                >
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Sair
+                </button>
+
             </div>
 
-            <div class="hero-card">
-                <div class="fake-house">
-                    <div class="room room1">Sala</div>
-                    <div class="room room2">Quarto</div>
-                    <div class="room room3">Cozinha</div>
-                    <div class="room room4">Banheiro</div>
+        </aside>
+
+        <!-- MAIN -->
+
+        <main class="main-content">
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <button
+                    class="mobile-menu"
+                    id="mobileMenu"
+                    aria-label="Abrir menu"
+                >
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <div class="topbar-search">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="search"
+                        id="globalSearch"
+                        placeholder="Pesquisar projetos, ambientes..."
+                    >
+
+                    <span class="search-shortcut">
+                        Ctrl K
+                    </span>
+
                 </div>
 
-                <div class="card-info">
-                    <strong>Meu primeiro projeto</strong>
-                    <span>Planta residencial • 200 m²</span>
+                <div class="topbar-actions">
+
+                    <button
+                        class="icon-button"
+                        id="themeButton"
+                        title="Alterar tema"
+                    >
+                        <i class="fa-regular fa-moon"></i>
+                    </button>
+
+                    <button
+                        class="icon-button notification-button"
+                        id="notificationButton"
+                        title="Notificações"
+                    >
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+
+                    <button
+                        class="user-mini"
+                        id="profileButton"
+                    >
+
+                        <span class="avatar">
+                            NV
+                        </span>
+
+                        <span class="user-mini-info">
+                            <strong>Novae Studio</strong>
+                            <small>Designer</small>
+                        </span>
+
+                        <i class="fa-solid fa-chevron-down"></i>
+
+                    </button>
+
                 </div>
+
+            </header>
+
+            <!-- CONTENT -->
+
+            <div class="page-container">
+
+                <!-- HOME -->
+
+                <section
+                    class="page active-page"
+                    id="page-inicio"
+                >
+
+                    <div class="hero">
+
+                        <div class="hero-content">
+
+                            <span class="eyebrow">
+                                PLATAFORMA DE DESIGN
+                            </span>
+
+                            <h1>
+                                Transforme ideias em
+                                <span>espaços extraordinários.</span>
+                            </h1>
+
+                            <p>
+                                Crie, organize e apresente seus projetos
+                                de interiores em um único espaço.
+                            </p>
+
+                            <div class="hero-actions">
+
+                                <button
+                                    class="primary-button"
+                                    id="newProjectButton"
+                                >
+                                    <i class="fa-solid fa-plus"></i>
+                                    Criar novo projeto
+                                </button>
+
+                                <button
+                                    class="secondary-button"
+                                    data-page="inspiracao"
+                                >
+                                    Explorar inspirações
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <div class="hero-decoration">
+
+                            <div class="decoration-card card-one">
+                                <span>01</span>
+                                <strong>Elegância</strong>
+                            </div>
+
+                            <div class="decoration-card card-two">
+                                <span>02</span>
+                                <strong>Precisão</strong>
+                            </div>
+
+                            <div class="decoration-card card-three">
+                                <span>03</span>
+                                <strong>Criatividade</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="section-header">
+
+                        <div>
+                            <span class="section-label">
+                                SEU ESPAÇO DE TRABALHO
+                            </span>
+
+                            <h2>
+                                Projetos recentes
+                            </h2>
+                        </div>
+
+                        <button
+                            class="text-button"
+                            data-page="projetos"
+                        >
+                            Ver todos
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="projects-grid">
+
+                        <article
+                            class="project-card featured"
+                            data-category="Sala"
+                            data-title="Apartamento Contemporâneo"
+                        >
+
+                            <div class="project-image image-living">
+
+                                <div class="project-overlay">
+
+                                    <button
+                                        class="round-button favorite-toggle"
+                                        title="Favoritar"
+                                    >
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+
+                                    <button
+                                        class="round-button project-open"
+                                        title="Abrir projeto"
+                                    >
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+
+                                </div>
+
+                                <span class="project-status">
+                                    Publicado
+                                </span>
+
+                            </div>
+
+                            <div class="project-info">
+
+                                <div>
+
+                                    <span class="project-category">
+                                        SALA DE ESTAR
+                                    </span>
+
+                                    <h3>
+                                        Apartamento Contemporâneo
+                                    </h3>
+
+                                </div>
+
+                                <button
+                                    class="more-button"
+                                    title="Mais opções"
+                                >
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+
+                            </div>
+
+                            <div class="project-meta">
+
+                                <span>
+                                    <i class="fa-regular fa-clock"></i>
+                                    Atualizado hoje
+                                </span>
+
+                                <span>
+                                    <i class="fa-regular fa-eye"></i>
+                                    128
+                                </span>
+
+                            </div>
+
+                        </article>
+
+                        <article
+                            class="project-card"
+                            data-category="Quarto"
+                            data-title="Suíte Minimalista"
+                        >
+
+                            <div class="project-image image-bedroom">
+
+                                <div class="project-overlay">
+
+                                    <button
+                                        class="round-button favorite-toggle"
+                                        title="Favoritar"
+                                    >
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+
+                                    <button
+                                        class="round-button project-open"
+                                        title="Abrir projeto"
+                                    >
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+
+                                </div>
+
+                                <span class="project-status draft">
+                                    Rascunho
+                                </span>
+
+                            </div>
+
+                            <div class="project-info">
+
+                                <div>
+
+                                    <span class="project-category">
+                                        QUARTO
+                                    </span>
+
+                                    <h3>
+                                        Suíte Minimalista
+                                    </h3>
+
+                                </div>
+
+                                <button
+                                    class="more-button"
+                                >
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+
+                            </div>
+
+                            <div class="project-meta">
+
+                                <span>
+                                    <i class="fa-regular fa-clock"></i>
+                                    Há 2 dias
+                                </span>
+
+                                <span>
+                                    <i class="fa-regular fa-eye"></i>
+                                    64
+                                </span>
+
+                            </div>
+
+                        </article>
+
+                        <article
+                            class="project-card"
+                            data-category="Cozinha"
+                            data-title="Cozinha Natural"
+                        >
+
+                            <div class="project-image image-kitchen">
+
+                                <div class="project-overlay">
+
+                                    <button
+                                        class="round-button favorite-toggle"
+                                        title="Favoritar"
+                                    >
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+
+                                    <button
+                                        class="round-button project-open"
+                                        title="Abrir projeto"
+                                    >
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+
+                                </div>
+
+                                <span class="project-status">
+                                    Publicado
+                                </span>
+
+                            </div>
+
+                            <div class="project-info">
+
+                                <div>
+
+                                    <span class="project-category">
+                                        COZINHA
+                                    </span>
+
+                                    <h3>
+                                        Cozinha Natural
+                                    </h3>
+
+                                </div>
+
+                                <button
+                                    class="more-button"
+                                >
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+
+                            </div>
+
+                            <div class="project-meta">
+
+                                <span>
+                                    <i class="fa-regular fa-clock"></i>
+                                    Há 4 dias
+                                </span>
+
+                                <span>
+                                    <i class="fa-regular fa-eye"></i>
+                                    91
+                                </span>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                    <div class="section-header inspiration-header">
+
+                        <div>
+
+                            <span class="section-label">
+                                DESCUBRA
+                            </span>
+
+                            <h2>
+                                Inspiração para seu próximo projeto
+                            </h2>
+
+                        </div>
+
+                        <button
+                            class="text-button"
+                            data-page="inspiracao"
+                        >
+                            Explorar
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="inspiration-grid">
+
+                        <article class="inspiration-card large">
+                            <div class="inspiration-image inspiration-one">
+                                <div class="inspiration-caption">
+                                    <span>INTERIORES</span>
+                                    <h3>Minimalismo sofisticado</h3>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="inspiration-card">
+                            <div class="inspiration-image inspiration-two">
+                                <div class="inspiration-caption">
+                                    <span>CORES</span>
+                                    <h3>Neutros naturais</h3>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="inspiration-card">
+                            <div class="inspiration-image inspiration-three">
+                                <div class="inspiration-caption">
+                                    <span>ESTILO</span>
+                                    <h3>Contemporâneo</h3>
+                                </div>
+                            </div>
+                        </article>
+
+                    </div>
+
+                </section>
+
+                <!-- PROJETOS -->
+
+                <section
+                    class="page"
+                    id="page-projetos"
+                >
+
+                    <div class="page-heading">
+
+                        <div>
+
+                            <span class="section-label">
+                                PORTFÓLIO
+                            </span>
+
+                            <h1>
+                                Meus projetos
+                            </h1>
+
+                            <p>
+                                Gerencie todos os seus projetos em um só lugar.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="primary-button"
+                            id="newProjectButtonProjects"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Novo projeto
+                        </button>
+
+                    </div>
+
+                    <div class="filter-bar">
+
+                        <button
+                            class="filter-button active"
+                            data-filter="todos"
+                        >
+                            Todos
+                        </button>
+
+                        <button
+                            class="filter-button"
+                            data-filter="Sala"
+                        >
+                            Sala
+                        </button>
+
+                        <button
+                            class="filter-button"
+                            data-filter="Quarto"
+                        >
+                            Quarto
+                        </button>
+
+                        <button
+                            class="filter-button"
+                            data-filter="Cozinha"
+                        >
+                            Cozinha
+                        </button>
+
+                        <button
+                            class="filter-button"
+                            data-filter="Escritório"
+                        >
+                            Escritório
+                        </button>
+
+                    </div>
+
+                    <div class="projects-grid all-projects">
+
+                        <article
+                            class="project-card"
+                            data-category="Sala"
+                            data-title="Apartamento Contemporâneo"
+                        >
+
+                            <div class="project-image image-living">
+
+                                <div class="project-overlay">
+
+                                    <button class="round-button favorite-toggle">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+
+                                    <button class="round-button project-open">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div class="project-info">
+
+                                <div>
+                                    <span class="project-category">SALA</span>
+                                    <h3>Apartamento Contemporâneo</h3>
+                                </div>
+
+                                <button class="more-button">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+
+                            </div>
+
+                        </article>
+
+                        <article
+                            class="project-card"
+                            data-category="Quarto"
+                            data-title="Suíte Minimalista"
+                        >
+
+                            <div class="project-image image-bedroom">
+
+                                <div class="project-overlay">
+
+                                    <button class="round-button favorite-toggle">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+
+                                    <button class="round-button project-open">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div class="project-info">
+
+                                <div>
+                                    <span class="project-category">QUARTO</span>
+                                    <h3>Suíte Minimalista</h3>
+                                </div>
+
+                                <button class="more-button">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+
+                            </div>
+
+                        </article>
+
+                        <article
+                            class="project-card"
+                            data-category="Cozinha"
+                            data-title="Cozinha Natural"
+                        >
+
+                            <div class="project-image image-kitchen">
+
+                                <div class="project-overlay">
+
+                                    <button class="round-button favorite-toggle">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+
+                                    <button class="round-button project-open">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div class="project-info">
+
+                                <div>
+                                    <span class="project-category">COZINHA</span>
+                                    <h3>Cozinha Natural</h3>
+                                </div>
+
+                                <button class="more-button">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+
+                            </div>
+
+                        </article>
+
+                        <article
+                            class="project-card"
+                            data-category="Escritório"
+                            data-title="Home Office Executivo"
+                        >
+
+                            <div class="project-image image-office">
+
+                                <div class="project-overlay">
+
+                                    <button class="round-button favorite-toggle">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+
+                                    <button class="round-button project-open">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <div class="project-info">
+
+                                <div>
+                                    <span class="project-category">ESCRITÓRIO</span>
+                                    <h3>Home Office Executivo</h3>
+                                </div>
+
+                                <button class="more-button">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                </section>
+
+                <!-- INSPIRAÇÃO -->
+
+                <section
+                    class="page"
+                    id="page-inspiracao"
+                >
+
+                    <div class="page-heading">
+
+                        <div>
+
+                            <span class="section-label">
+                                COMUNIDADE
+                            </span>
+
+                            <h1>
+                                Inspiração
+                            </h1>
+
+                            <p>
+                                Descubra ideias para transformar seus espaços.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="inspiration-filter">
+
+                        <button class="filter-button active">
+                            Todos
+                        </button>
+
+                        <button class="filter-button">
+                            Moderno
+                        </button>
+
+                        <button class="filter-button">
+                            Minimalista
+                        </button>
+
+                        <button class="filter-button">
+                            Industrial
+                        </button>
+
+                        <button class="filter-button">
+                            Escandinavo
+                        </button>
+
+                    </div>
+
+                    <div class="masonry-grid">
+
+                        <article class="masonry-item tall">
+                            <div class="masonry-image inspiration-four">
+                                <div class="masonry-content">
+                                    <span>MODERNO</span>
+                                    <h3>Linhas e volumes</h3>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="masonry-item">
+                            <div class="masonry-image inspiration-five">
+                                <div class="masonry-content">
+                                    <span>MINIMALISTA</span>
+                                    <h3>Essencial</h3>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="masonry-item">
+                            <div class="masonry-image inspiration-six">
+                                <div class="masonry-content">
+                                    <span>INDUSTRIAL</span>
+                                    <h3>Concreto e madeira</h3>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="masonry-item wide">
+                            <div class="masonry-image inspiration-seven">
+                                <div class="masonry-content">
+                                    <span>CONTEMPORÂNEO</span>
+                                    <h3>Arquitetura aberta</h3>
+                                </div>
+                            </div>
+                        </article>
+
+                    </div>
+
+                </section>
+
+                <!-- FAVORITOS -->
+
+                <section
+                    class="page"
+                    id="page-favoritos"
+                >
+
+                    <div class="page-heading">
+
+                        <div>
+
+                            <span class="section-label">
+                                SALVOS
+                            </span>
+
+                            <h1>
+                                Favoritos
+                            </h1>
+
+                            <p>
+                                Seus projetos e inspirações salvos.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="favorites-empty"
+                        id="favoritesEmpty"
+                    >
+
+                        <div class="empty-icon">
+                            <i class="fa-regular fa-heart"></i>
+                        </div>
+
+                        <h2>
+                            Seus favoritos aparecerão aqui
+                        </h2>
+
+                        <p>
+                            Clique no coração de um projeto para salvá-lo.
+                        </p>
+
+                        <button
+                            class="primary-button"
+                            data-page="projetos"
+                        >
+                            Explorar projetos
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <!-- PERFIL -->
+
+                <section
+                    class="page"
+                    id="page-perfil"
+                >
+
+                    <div class="profile-cover">
+
+                        <div class="profile-main">
+
+                            <div class="profile-avatar">
+                                NV
+                            </div>
+
+                            <div>
+
+                                <span class="section-label">
+                                    DESIGNER
+                                </span>
+
+                                <h1>
+                                    Novae Studio
+                                </h1>
+
+                                <p>
+                                    Arquitetura e interiores
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            class="secondary-button"
+                            id="editProfileButton"
+                        >
+                            <i class="fa-solid fa-pen"></i>
+                            Editar perfil
+                        </button>
+
+                    </div>
+
+                    <div class="profile-statistics">
+
+                        <div>
+                            <strong>12</strong>
+                            <span>Projetos</span>
+                        </div>
+
+                        <div>
+                            <strong>1.8K</strong>
+                            <span>Visualizações</span>
+                        </div>
+
+                        <div>
+                            <strong>342</strong>
+                            <span>Seguidores</span>
+                        </div>
+
+                    </div>
+
+                    <div class="profile-about">
+
+                        <span class="section-label">
+                            SOBRE
+                        </span>
+
+                        <h2>
+                            Criando espaços com identidade.
+                        </h2>
+
+                        <p>
+                            O Novae Studio desenvolve projetos de interiores
+                            contemporâneos combinando funcionalidade,
+                            estética e personalidade.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- CONFIGURAÇÕES -->
+
+                <section
+                    class="page"
+                    id="page-configuracoes"
+                >
+
+                    <div class="page-heading">
+
+                        <div>
+
+                            <span class="section-label">
+                                PREFERÊNCIAS
+                            </span>
+
+                            <h1>
+                                Configurações
+                            </h1>
+
+                            <p>
+                                Personalize sua experiência.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="settings-card">
+
+                        <div class="setting-row">
+
+                            <div class="setting-icon">
+                                <i class="fa-regular fa-moon"></i>
+                            </div>
+
+                            <div class="setting-text">
+                                <strong>Modo escuro</strong>
+                                <span>Altere a aparência da plataforma.</span>
+                            </div>
+
+                            <label class="switch">
+                                <input
+                                    type="checkbox"
+                                    id="darkModeSwitch"
+                                >
+                                <span class="slider"></span>
+                            </label>
+
+                        </div>
+
+                        <div class="setting-row">
+
+                            <div class="setting-icon">
+                                <i class="fa-regular fa-bell"></i>
+                            </div>
+
+                            <div class="setting-text">
+                                <strong>Notificações</strong>
+                                <span>Receba atualizações dos seus projetos.</span>
+                            </div>
+
+                            <label class="switch">
+                                <input
+                                    type="checkbox"
+                                    checked
+                                >
+                                <span class="slider"></span>
+                            </label>
+
+                        </div>
+
+                        <div class="setting-row">
+
+                            <div class="setting-icon">
+                                <i class="fa-solid fa-earth-americas"></i>
+                            </div>
+
+                            <div class="setting-text">
+                                <strong>Idioma</strong>
+                                <span>Português do Brasil</span>
+                            </div>
+
+                            <button class="setting-action">
+                                Alterar
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
             </div>
 
-        </section>
+        </main>
 
-        <section class="features" id="sobre">
+    </div>
 
-            <h2>Tudo para criar seu projeto</h2>
+    <!-- NEW PROJECT MODAL -->
 
-            <div class="feature-grid">
+    <div
+        class="modal-container"
+        id="projectModal"
+    >
 
-                <div class="feature">
-                    <div class="icon">📐</div>
-                    <h3>Planta 2D</h3>
-                    <p>
-                        Desenhe seus cômodos e visualize
-                        automaticamente suas medidas.
-                    </p>
-                </div>
+        <div class="modal">
 
-                <div class="feature">
-                    <div class="icon">🏠</div>
-                    <h3>Visualização 3D</h3>
-                    <p>
-                        Transforme sua planta em uma estrutura
-                        tridimensional.
-                    </p>
-                </div>
+            <button
+                class="modal-close"
+                data-close-modal
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
 
-                <div class="feature">
-                    <div class="icon">📏</div>
-                    <h3>Medidas automáticas</h3>
-                    <p>
-                        Veja comprimento, largura, altura e
-                        área do ambiente.
-                    </p>
+            <div class="modal-header">
+
+                <span class="modal-icon">
+                    <i class="fa-solid fa-cubes"></i>
+                </span>
+
+                <div>
+
+                    <span class="section-label">
+                        NOVO PROJETO
+                    </span>
+
+                    <h2>
+                        Comece uma nova criação
+                    </h2>
+
                 </div>
 
             </div>
 
-        </section>
+            <form id="projectForm">
 
-    </main>
+                <div class="form-group">
 
-    <footer>
-        <strong>ARQUYDECORE</strong>
-        <p>Arquitetura ao alcance da sua criatividade.</p>
-    </footer>
+                    <label for="projectName">
+                        Nome do projeto
+                    </label>
+
+                    <input
+                        type="text"
+                        id="projectName"
+                        placeholder="Ex.: Apartamento dos sonhos"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="projectType">
+                        Tipo de ambiente
+                    </label>
+
+                    <select id="projectType">
+
+                        <option value="Sala">
+                            Sala de estar
+                        </option>
+
+                        <option value="Quarto">
+                            Quarto
+                        </option>
+
+                        <option value="Cozinha">
+                            Cozinha
+                        </option>
+
+                        <option value="Escritório">
+                            Escritório
+                        </option>
+
+                        <option value="Banheiro">
+                            Banheiro
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="projectDescription">
+                        Descrição
+                    </label>
+
+                    <textarea
+                        id="projectDescription"
+                        rows="4"
+                        placeholder="Descreva brevemente seu projeto..."
+                    ></textarea>
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        data-close-modal
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Criar projeto
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- LOGIN MODAL -->
+
+    <div
+        class="modal-container"
+        id="loginModal"
+    >
+
+        <div class="modal small-modal">
+
+            <button
+                class="modal-close"
+                data-close-modal
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="login-logo">
+
+                <svg
+                    viewBox="0 0 120 120"
+                    class="login-logo-svg"
+                >
+
+                    <rect
+                        x="10"
+                        y="10"
+                        width="100"
+                        height="100"
+                        rx="28"
+                        class="logo-background"
+                    />
+
+                    <path
+                        d="M35 78V42L62 72V42"
+                        class="logo-line"
+                    />
+
+                    <path
+                        d="M76 42V78"
+                        class="logo-line"
+                    />
+
+                    <path
+                        d="M76 42L91 42L91 78L76 78"
+                        class="logo-line"
+                    />
+
+                </svg>
+
+                <strong>NOVAÉ</strong>
+
+                <span>DESIGN</span>
+
+            </div>
+
+            <div class="modal-header centered">
+
+                <div>
+
+                    <span class="section-label">
+                        ÁREA RESTRITA
+                    </span>
+
+                    <h2>
+                        Entrar na sua conta
+                    </h2>
+
+                </div>
+
+            </div>
+
+            <form id="loginForm">
+
+                <div class="form-group">
+
+                    <label for="loginEmail">
+                        E-mail
+                    </label>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="seu@email.com"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="loginPassword">
+                        Senha
+                    </label>
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Sua senha"
+                        required
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-button full-button"
+                >
+                    Entrar
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- NOTIFICATION PANEL -->
+
+    <div
+        class="notification-panel"
+        id="notificationPanel"
+    >
+
+        <div class="notification-header">
+
+            <div>
+                <span class="section-label">
+                    CENTRAL
+                </span>
+
+                <h3>
+                    Notificações
+                </h3>
+            </div>
+
+            <button
+                id="closeNotifications"
+                class="panel-close"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <div class="notification-item">
+
+            <div class="notification-icon">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+
+            <div>
+                <strong>Novo favorito</strong>
+                <p>Seu projeto recebeu uma nova interação.</p>
+                <small>Há 12 minutos</small>
+            </div>
+
+        </div>
+
+        <div class="notification-item">
+
+            <div class="notification-icon">
+                <i class="fa-solid fa-cubes"></i>
+            </div>
+
+            <div>
+                <strong>Projeto atualizado</strong>
+                <p>Suíte Minimalista foi salva.</p>
+                <small>Há 2 horas</small>
+            </div>
+
+        </div>
+
+        <div class="notification-item">
+
+            <div class="notification-icon">
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <div>
+                <strong>Bem-vindo</strong>
+                <p>Seu espaço de trabalho está pronto.</p>
+                <small>Hoje</small>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TOAST -->
+
+    <div
+        class="toast"
+        id="toast"
+    >
+        <i class="fa-solid fa-check"></i>
+        <span id="toastMessage">
+            Operação realizada.
+        </span>
+    </div>
 
     <script src="script.js"></script>
 
