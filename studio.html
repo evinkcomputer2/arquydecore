@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOVAÉ Studio — Crie seu Espaço</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'DM Sans', sans-serif;
         }
 
         body {
@@ -28,7 +33,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -38,31 +44,48 @@
         .setup-card {
             background: #fff;
             padding: 40px;
-            border-radius: 12px;
-            width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 16px;
+            width: 420px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
 
         .setup-card h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            text-align: center;
+            margin-bottom: 8px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .setup-card p {
+            color: #71717a;
+            font-size: 14px;
+            margin-bottom: 24px;
         }
 
         .setup-card label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
+            color: #3f3f46;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .setup-card select, .setup-card input {
+        .setup-card select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-bottom: 20px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 16px;
+            border: 1px solid #e4e4e7;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #fafafa;
+            color: #18181b;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .setup-card select:focus {
+            border-color: #4f46e5;
         }
 
         .btn-primary {
@@ -71,37 +94,41 @@
             background: #18181b;
             color: #fff;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
         }
 
         .btn-primary:hover {
-            background: #3f3f46;
+            background: #27272a;
         }
 
         /* HEADER DO EDITOR */
         header {
-            height: 60px;
+            height: 64px;
             background: #fff;
             border-bottom: 1px solid #e4e4e7;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
         .logo {
             font-weight: 700;
-            font-size: 18px;
+            font-size: 16px;
             letter-spacing: 1px;
+            color: #18181b;
         }
 
         .project-info {
             font-size: 14px;
             color: #71717a;
+            background: #f4f4f5;
+            padding: 6px 14px;
+            border-radius: 20px;
         }
 
         /* LAYOUT PRINCIPAL DO EDITOR */
@@ -116,55 +143,72 @@
             width: 280px;
             background: #fff;
             border-right: 1px solid #e4e4e7;
-            padding: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 16px;
             overflow-y: auto;
         }
 
         sidebar h3 {
-            font-size: 14px;
+            font-size: 12px;
             text-transform: uppercase;
             color: #71717a;
-            margin-bottom: 5px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
         }
 
         .furniture-item {
-            background: #f4f4f5;
+            background: #fafafa;
             border: 1px solid #e4e4e7;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 14px;
+            border-radius: 8px;
             cursor: grab;
-            text-align: center;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
             font-size: 14px;
+            color: #27272a;
             transition: all 0.2s;
         }
 
         .furniture-item:hover {
-            background: #e4e4e7;
-            border-color: #d1d5db;
+            background: #f4f4f5;
+            border-color: #d4d4d8;
+            transform: translateY(-1px);
         }
 
-        /* ÁREA DA PLANTA (WORKSPACE) */
+        .furniture-item i {
+            color: #4f46e5;
+            font-size: 16px;
+        }
+
+        /* ÁREA DA PLANTA (WORKSPACE) COM GRID */
         .workspace {
             flex: 1;
-            background: #e9e9eb;
+            background: #f1f1f3;
             position: relative;
             overflow: auto;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 40px;
         }
 
         .room-canvas {
-            width: 600px;
+            width: 650px;
             height: 500px;
-            background: #ffffff;
-            border: 4px solid #18181b;
+            background-color: #ffffff;
+            /* Efeito de malha quadriculada (Grid de planta baixa) */
+            background-image: 
+                linear-gradient(to right, #f4f4f5 1px, transparent 1px),
+                linear-gradient(to bottom, #f4f4f5 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 3px solid #18181b;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+            border-radius: 2px;
         }
 
         /* MÓVEIS POSICIONADOS NO AMBIENTE */
@@ -172,27 +216,30 @@
             position: absolute;
             background: #e0e7ff;
             border: 2px solid #4f46e5;
-            border-radius: 4px;
+            border-radius: 6px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 600;
             color: #3730a3;
             cursor: move;
             user-select: none;
-            padding: 5px;
+            padding: 4px;
             text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
         .placed-furniture .actions {
             position: absolute;
-            top: -25px;
+            top: -28px;
             right: 0;
             display: none;
             background: #18181b;
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         .placed-furniture:hover .actions {
@@ -203,8 +250,8 @@
             background: none;
             border: none;
             color: #fff;
-            padding: 3px 8px;
-            font-size: 10px;
+            padding: 4px 8px;
+            font-size: 11px;
             cursor: pointer;
         }
 
@@ -218,8 +265,10 @@
     <!-- TELA DE SETUP INICIAL -->
     <div id="setup-screen">
         <div class="setup-card">
-            <h2>Criar Novo Projeto</h2>
-            <label for="room-type">Escolha o Ambiente</label>
+            <h2>NOVAÉ Studio</h2>
+            <p>Configure o espaço inicial do seu projeto.</p>
+            
+            <label for="room-type">Ambiente</label>
             <select id="room-type">
                 <option value="Sala de Estar">Sala de Estar</option>
                 <option value="Quarto">Quarto</option>
@@ -227,9 +276,9 @@
                 <option value="Escritório">Escritório</option>
             </select>
 
-            <label for="room-size">Tamanho (Metros)</label>
+            <label for="room-size">Dimensões</label>
             <select id="room-size">
-                <option value="4x4">4m × 4m (Médio)</option>
+                <option value="4x4">4m × 4m (Quadrado)</option>
                 <option value="5x4">5m × 4m (Retangular)</option>
                 <option value="3x3">3m × 3m (Compacto)</option>
             </select>
@@ -240,22 +289,34 @@
 
     <!-- CABEÇALHO -->
     <header>
-        <div class="logo">NOVAÉ STUDIO</div>
+        <div class="logo"><i class="fa-solid fa-wand-magic-sparkles" style="color: #4f46e5; margin-right: 8px;"></i> NOVAÉ STUDIO</div>
         <div class="project-info" id="project-label">Projeto: Sala de Estar (4x4m)</div>
-        <button class="btn-primary" style="width: auto; padding: 6px 15px; font-size: 14px;" onclick="location.reload()">Novo Projeto</button>
+        <button class="btn-primary" style="width: auto; padding: 8px 16px; font-size: 13px;" onclick="location.reload()">Novo Projeto</button>
     </header>
 
     <!-- CONTAINER DO EDITOR -->
     <div class="editor-container">
         <!-- BIBLIOTECA DE MÓVEIS -->
         <sidebar>
-            <h3>Mobília</h3>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Sofá 3 Lugares" data-w="160" data-h="80">Sofá 3 Lugares</div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Poltrona" data-w="70" data-h="70">Poltrona</div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Rack TV" data-w="140" data-h="40">Rack / Painel TV</div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa de Centro" data-w="90" data-h="50">Mesa de Centro</div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Cama Casal" data-w="140" data-h="190">Cama Casal</div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa Jantar" data-w="150" data-h="90">Mesa de Jantar</div>
+            <h3>Mobília & Elementos</h3>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Sofá 3 Lugares" data-w="160" data-h="80">
+                <i class="fa-solid fa-couch"></i> Sofá 3 Lugares
+            </div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Poltrona" data-w="70" data-h="70">
+                <i class="fa-solid fa-chair"></i> Poltrona
+            </div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Rack TV" data-w="140" data-h="40">
+                <i class="fa-solid fa-tv"></i> Rack / Painel TV
+            </div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa de Centro" data-w="90" data-h="50">
+                <i class="fa-solid fa-square"></i> Mesa de Centro
+            </div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Cama Casal" data-w="140" data-h="190">
+                <i class="fa-solid fa-bed"></i> Cama Casal
+            </div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa Jantar" data-w="150" data-h="90">
+                <i class="fa-solid fa-utensils"></i> Mesa de Jantar
+            </div>
         </sidebar>
 
         <!-- ÁREA DE TRABALHO / PLANTA -->
@@ -281,7 +342,7 @@
 
         function drag(ev) {
             ev.dataTransfer.setData("text/plain", JSON.stringify({
-                name: ev.target.getAttribute('data-name'),
+                name: ev.target.getAttribute('data-name') || ev.target.innerText.trim(),
                 width: ev.target.getAttribute('data-w'),
                 height: ev.target.getAttribute('data-h')
             }));
@@ -292,13 +353,11 @@
             const canvas = document.getElementById('roomCanvas');
             const rect = canvas.getBoundingClientRect();
             
-            // Posição do mouse dentro da planta
             const x = ev.clientX - rect.left - 40;
             const y = ev.clientY - rect.top - 20;
 
             const data = JSON.parse(ev.dataTransfer.getData("text/plain"));
 
-            // Criar elemento visual na planta
             const item = document.createElement('div');
             item.className = 'placed-furniture';
             item.style.left = `${Math.max(0, x)}px`;
@@ -307,9 +366,9 @@
             item.style.height = `${data.height}px`;
             
             item.innerHTML = `
-                ${data.name}
+                <span>${data.name}</span>
                 <div class="actions">
-                    <button onclick="this.parentElement.parentElement.remove()">X</button>
+                    <button onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i> Excluir</button>
                 </div>
             `;
 
