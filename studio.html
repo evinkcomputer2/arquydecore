@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOVAÉ Studio — 3D Planner</title>
+    <title>NOVAÉ Studio — 3D Interativo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
-    <!-- Biblioteca Three.js -->
+    <!-- Three.js e OrbitControls para movimentação livre da câmera -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <style>
         * {
@@ -100,7 +101,7 @@
             background: #27272a;
         }
 
-        /* BARRA SUPERIOR ESTILO HOMEBYME */
+        /* BARRA SUPERIOR */
         .top-toolbar {
             height: 60px;
             background: #fff;
@@ -131,20 +132,68 @@
             background: #f4f4f5;
         }
 
-        .tool-btn.active-yellow {
-            background: #ffeb3b;
-            border-color: #fbc02d;
-            color: #000;
-        }
-
-        /* ÁREA DE RENDERIZAÇÃO 3D */
-        #canvas-container {
+        /* LAYOUT PRINCIPAL (BARRA LATERAL + PALCO 3D) */
+        .main-layout {
+            display: flex;
             flex: 1;
-            width: 100%;
+            overflow: hidden;
             position: relative;
         }
 
-        /* ALTERNADOR DE VISTA 2D / 3D INFERIOR */
+        sidebar {
+            width: 280px;
+            background: #fff;
+            border-right: 1px solid #e4e4e7;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            z-index: 5;
+        }
+
+        sidebar h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #71717a;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .furniture-card {
+            background: #fafafa;
+            border: 1px solid #e4e4e7;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #27272a;
+            transition: all 0.2s;
+        }
+
+        .furniture-card:hover {
+            background: #f0f0f3;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .furniture-card i {
+            color: #4f46e5;
+            font-size: 16px;
+        }
+
+        /* CANVAS 3D */
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: #f4f4f5;
+        }
+
+        /* ALTERNADOR DE VISTA 2D / 3D */
         .view-switcher {
             position: absolute;
             bottom: 30px;
@@ -179,50 +228,70 @@
 </head>
 <body>
 
-    <!-- TELA DE CONFIGURAÇÃO INICIAL -->
+    <!-- TELA DE CONFIGURAÇÃO -->
     <div id="setup-screen">
         <div class="setup-card">
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Selecione o tipo de ambiente e as dimensões do cômodo.</p>
+            <p>Selecione o ambiente e as dimensões do cômodo.</p>
             
             <label>Ambiente</label>
             <select id="room-type">
-                <option value="Sala de Estar">Sala de Estar</option>
                 <option value="Quarto">Quarto</option>
+                <option value="Sala de Estar">Sala de Estar</option>
                 <option value="Cozinha">Cozinha</option>
             </select>
 
             <label>Tamanho (Metros)</label>
             <select id="room-size">
                 <option value="4">4m × 4m (Padrão)</option>
-                <option value="5">5m × 4m (Retangular)</option>
-                <option value="6">6m × 5m (Grande)</option>
+                <option value="5">5m × 5m (Espaçoso)</option>
+                <option value="6">6m × 6m (Grande)</option>
             </select>
 
-            <button class="btn-primary" onclick="initStudio()">Criar Ambiente 3D</button>
+            <button class="btn-primary" onclick="initStudio()">Iniciar Projeto 3D</button>
         </div>
     </div>
 
     <!-- BARRA SUPERIOR -->
     <header class="top-toolbar">
-        <button class="tool-btn active-yellow" onclick="location.reload()"><i class="fa-solid fa-house"></i></button>
+        <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
         <button class="tool-btn"><i class="fa-solid fa-bars"></i> Novo projeto</button>
-        <button class="tool-btn"><i class="fa-solid fa-layer-group"></i> Andar térreo</button>
-        <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Sala de Estar (4x4m)</div>
-        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="salvarFirebase()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+        <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Quarto (5x5m)</div>
+        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto pronto para salvar no Firebase!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </header>
 
-    <!-- CONTAINER 3D -->
-    <div id="canvas-container"></div>
+    <!-- LAYOUT COM BARRA LATERAL E PALCO 3D -->
+    <div class="main-layout">
+        <sidebar>
+            <h3>Mobília Realista 3D</h3>
+            <div class="furniture-card" onclick="addFurniture('sofa')">
+                <i class="fa-solid fa-couch"></i> Sofá 3 Lugares
+            </div>
+            <div class="furniture-card" onclick="addFurniture('bed')">
+                <i class="fa-solid fa-bed"></i> Cama de Casal
+            </div>
+            <div class="furniture-card" onclick="addFurniture('tv_rack')">
+                <i class="fa-solid fa-tv"></i> Rack / Painel TV
+            </div>
+            <div class="furniture-card" onclick="addFurniture('table')">
+                <i class="fa-solid fa-utensils"></i> Mesa de Jantar
+            </div>
+            <div class="furniture-card" onclick="addFurniture('armchair')">
+                <i class="fa-solid fa-chair"></i> Poltrona Elegance
+            </div>
+        </sidebar>
 
-    <!-- BARRA 2D / 3D -->
+        <div id="canvas-container"></div>
+    </div>
+
+    <!-- ALTERNADOR 2D / 3D -->
     <div class="view-switcher">
         <button class="view-btn" onclick="setView('2D')">2D</button>
         <button class="view-btn active" onclick="setView('3D')">3D</button>
     </div>
 
     <script>
-        let scene, camera, renderer, roomSize = 4;
+        let scene, camera, renderer, controls, roomSize = 5;
 
         function initStudio() {
             const type = document.getElementById('room-type').value;
@@ -238,45 +307,54 @@
 
             // 1. Cena
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf8f9fa);
+            scene.background = new THREE.Color(0xf1f1f3);
 
             // 2. Câmera
             camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
             camera.position.set(0, 8, 10);
-            camera.lookAt(0, 0, 0);
 
             // 3. Renderizador
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
-            // 4. Luzes
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-            directionalLight.position.set(10, 20, 10);
-            scene.add(directionalLight);
+            // 4. OrbitControls (Movimentação livre estilo HomeByMe: girar, dar zoom e arrastar)
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05; // Impede a câmera de ir abaixo do chão
 
-            // 5. Grid de Fundo (Piso Técnico)
-            const gridHelper = new THREE.GridHelper(30, 30, 0xdddddd, 0x11111122);
+            // 5. Luzes realistas
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            // 6. Grid técnico de fundo
+            const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xe5e7eb);
             gridHelper.position.y = -0.01;
             scene.add(gridHelper);
 
-            // 6. Piso de Madeira Realista do Cômodo
+            // 7. Piso de Madeira Realista
             const floorGeo = new THREE.PlaneGeometry(roomSize, roomSize);
             const floorMat = new THREE.MeshStandardMaterial({ 
-                color: 0xd7ccc8, // Tom amadeirado claro
-                roughness: 0.5 
+                color: 0xc89d7c, 
+                roughness: 0.35 
             });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
             scene.add(floor);
 
-            // 7. Paredes Translúcidas Estilo HomeByMe
+            // 8. Paredes translúcidas
             const wallMat = new THREE.MeshStandardMaterial({ 
                 color: 0xffffff, 
                 transparent: true, 
-                opacity: 0.25, 
+                opacity: 0.2, 
                 side: THREE.DoubleSide 
             });
             
@@ -292,8 +370,99 @@
             animate();
         }
 
+        // Função para criar móveis detalhados e realistas em 3D
+        function addFurniture(type) {
+            const group = new THREE.Group();
+
+            if (type === 'sofa') {
+                // Base do sofá
+                const baseGeo = new THREE.BoxGeometry(1.8, 0.4, 0.8);
+                const mat = new THREE.MeshStandardMaterial({ color: 0x3f3f46, roughness: 0.8 });
+                const base = new THREE.Mesh(baseGeo, mat);
+                base.position.y = 0.2;
+                group.add(base);
+
+                // Assentos
+                const seatGeo = new THREE.BoxGeometry(1.7, 0.2, 0.75);
+                const seatMat = new THREE.MeshStandardMaterial({ color: 0x71717a, roughness: 0.6 });
+                const seat = new THREE.Mesh(seatGeo, seatMat);
+                seat.position.set(0, 0.5, 0.02);
+                group.add(seat);
+
+                // Encosto
+                const backGeo = new THREE.BoxGeometry(1.8, 0.7, 0.2);
+                const back = new THREE.Mesh(backGeo, mat);
+                back.position.set(0, 0.85, -0.3);
+                group.add(back);
+            } 
+            else if (type === 'bed') {
+                // Estrutura Cama
+                const bedGeo = new THREE.BoxGeometry(1.4, 0.4, 1.9);
+                const bedMat = new THREE.MeshStandardMaterial({ color: 0x52525b });
+                const bedBase = new THREE.Mesh(bedGeo, bedMat);
+                bedBase.position.y = 0.2;
+                group.add(bedBase);
+
+                // Colchão
+                const mattressGeo = new THREE.BoxGeometry(1.35, 0.3, 1.85);
+                const mattressMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f5, roughness: 0.9 });
+                const mattress = new THREE.Mesh(mattressGeo, mattressMat);
+                mattress.position.y = 0.5;
+                group.add(mattress);
+
+                // Cabeceira
+                const headGeo = new THREE.BoxGeometry(1.4, 1.0, 0.1);
+                const head = new THREE.Mesh(headGeo, bedMat);
+                head.position.set(0, 0.5, -0.95);
+                group.add(head);
+            }
+            else if (type === 'tv_rack') {
+                const rackGeo = new THREE.BoxGeometry(1.5, 0.45, 0.45);
+                const rackMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.5 });
+                const rack = new THREE.Mesh(rackGeo, rackMat);
+                rack.position.y = 0.22;
+                group.add(rack);
+            }
+            else if (type === 'table') {
+                const tableGeo = new THREE.BoxGeometry(1.4, 0.08, 0.8);
+                const tableMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.4 });
+                const top = new THREE.Mesh(tableGeo, tableMat);
+                top.position.y = 0.75;
+                group.add(top);
+
+                // Pés da mesa
+                const legGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.75);
+                const legMat = new THREE.MeshStandardMaterial({ color: 0x18181b });
+                
+                [-0.6, 0.6].forEach(x => {
+                    [-0.3, 0.3].forEach(z => {
+                        const leg = new THREE.Mesh(legGeo, legMat);
+                        leg.position.set(x, 0.375, z);
+                        group.add(leg);
+                    });
+                });
+            }
+            else if (type === 'armchair') {
+                const seatGeo = new THREE.BoxGeometry(0.8, 0.4, 0.8);
+                const mat = new THREE.MeshStandardMaterial({ color: 0x4f46e5 });
+                const seat = new THREE.Mesh(seatGeo, mat);
+                seat.position.y = 0.2;
+                group.add(seat);
+
+                const backGeo = new THREE.BoxGeometry(0.8, 0.7, 0.2);
+                const back = new THREE.Mesh(backGeo, mat);
+                back.position.set(0, 0.75, -0.3);
+                group.add(back);
+            }
+
+            // Posiciona o móvel gerado aleatoriamente dentro do cômodo
+            group.position.set((Math.random() - 0.5) * 2, 0, (Math.random() - 0.5) * 2);
+            scene.add(group);
+        }
+
         function animate() {
             requestAnimationFrame(animate);
+            controls.update();
             renderer.render(scene, camera);
         }
 
@@ -302,16 +471,12 @@
             event.target.classList.add('active');
 
             if (mode === '2D') {
-                camera.position.set(0, 12, 0.001); // Visão superior estilo planta baixa
-                camera.lookAt(0, 0, 0);
+                camera.position.set(0, 12, 0.001);
+                controls.target.set(0, 0, 0);
             } else {
-                camera.position.set(0, 8, 10); // Visão perspectiva 3D
-                camera.lookAt(0, 0, 0);
+                camera.position.set(0, 8, 10);
+                controls.target.set(0, 0, 0);
             }
-        }
-
-        function salvarFirebase() {
-            alert("Dados do projeto (" + roomSize + "m) prontos para salvar no Firebase!");
         }
 
         window.addEventListener('resize', () => {
