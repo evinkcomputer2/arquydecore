@@ -123,7 +123,6 @@
             border-color: #4f46e5;
         }
 
-        /* Estilo para etiquetas de medida 3D na tela */
         .measurement-label {
             position: absolute;
             background: rgba(24, 24, 27, 0.85);
@@ -285,7 +284,7 @@
         <div class="setup-card">
             <div style="font-size: 40px; color: #4f46e5; margin-bottom: 12px;"><i class="fa-solid fa-pen-ruler"></i></div>
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Com o <b>Lápis</b> ativo, clique, arraste e solte para desenhar as paredes. As medidas em cm/m aparecem enquanto arrasta. Use o botão <b>Desfazer</b> se precisar!</p>
+            <p>Com o <b>Lápis</b> ativo, clique e arraste para desenhar cômodos quadrados ou retangulares perfeitos. As medidas aparecem durante o traço!</p>
             <button class="btn-primary" onclick="startWithDefaultRoom()"><i class="fa-solid fa-play"></i> Começar com Quarto 5x5m</button>
         </div>
     </div>
@@ -335,7 +334,6 @@
         </sidebar>
 
         <div id="canvas-container">
-            <!-- Container onde a tag HTML de medida ativa será injetada -->
             <div id="labels-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>
         </div>
     </div>
@@ -352,7 +350,6 @@
         let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         let offset = new THREE.Vector3();
 
-        // Variáveis do Lápis e Medidas
         let isPencilActive = false;
         let isDrawingLine = false;
         let pencilStartPoint = null;
@@ -429,6 +426,7 @@
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('project-title').innerText = 'Projeto: Quarto Personalizado (5x5m)';
             
+            // Definindo coordenadas perfeitas em sentido horário para formar um quadrado exato
             roomPoints = [
                 new THREE.Vector3(-2.5, 0, -2.5),
                 new THREE.Vector3(2.5, 0, -2.5),
@@ -450,7 +448,7 @@
                 roomPoints = [];
                 roomGroup.clear();
                 cleanupDrawingState();
-                alert('Modo Lápis ativado! Clique, arraste e solte para fazer as paredes. As medidas só aparecem enquanto você arrasta.');
+                alert('Modo Lápis ativado! Clique, arraste e solte para desenhar as paredes do cômodo.');
             } else {
                 btn.classList.remove('active-pencil');
                 undoBtn.style.display = 'none';
@@ -662,11 +660,15 @@
 
             if (isPencilActive) {
                 if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
-                    pencilStartPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
-                    isDrawingLine = true;
+                    let clickedPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
+                    
                     if (roomPoints.length === 0) {
+                        pencilStartPoint = clickedPoint;
                         roomPoints.push(pencilStartPoint);
+                    } else {
+                        pencilStartPoint = roomPoints[roomPoints.length - 1];
                     }
+                    isDrawingLine = true;
                 }
                 return;
             }
@@ -709,7 +711,6 @@
                         guideLineMesh = new THREE.Line(geometry, material);
                         scene.add(guideLineMesh);
 
-                        // Medida em tempo real da linha guia
                         let dist = pencilStartPoint.distanceTo(currentMousePoint);
                         currentMeasurePos = new THREE.Vector3().addVectors(pencilStartPoint, currentMousePoint).multiplyScalar(0.5);
                         currentMeasurePos.y = 1.2;
@@ -748,10 +749,13 @@
                     let endPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
                     
                     if (pencilStartPoint && pencilStartPoint.distanceTo(endPoint) > 0.1) {
-                        roomPoints.push(endPoint);
-                        buildRoomGeometry();
-                        // O próximo ponto inicial começa exatamente onde o último terminou para continuar desenhando
-                        pencilStartPoint = endPoint;
+                        // Se o usuário fechar perto do ponto inicial (primeiro ponto), não adiciona duplicado e fecha o polígono corretamente
+                        if (roomPoints.length > 2 && endPoint.distanceTo(roomPoints[0]) < 0.5) {
+                            buildRoomGeometry();
+                        } else {
+                            roomPoints.push(endPoint);
+                            buildRoomGeometry();
+                        }
                     }
                 }
 
@@ -780,7 +784,6 @@
             requestAnimationFrame(animate);
             controls.update();
 
-            // Atualiza a posição da tag de medida ativa apenas enquanto o usuário estiver arrastando o mouse
             if (activeMeasureLabel && currentMeasurePos) {
                 updateLabelPosition(activeMeasureLabel, currentMeasurePos);
             }
