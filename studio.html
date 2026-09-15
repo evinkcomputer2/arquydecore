@@ -123,6 +123,22 @@
             border-color: #4f46e5;
         }
 
+        /* Estilo para etiquetas de medida 3D na tela */
+        .measurement-label {
+            position: absolute;
+            background: rgba(24, 24, 27, 0.85);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
         #selection-panel {
             position: absolute;
             top: 80px;
@@ -269,7 +285,7 @@
         <div class="setup-card">
             <div style="font-size: 40px; color: #4f46e5; margin-bottom: 12px;"><i class="fa-solid fa-pen-ruler"></i></div>
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Com o <b>Lápis</b> ativado, clique e **mantenha pressionado** o mouse para arrastar e desenhar cada parte da parede. Ao **soltar** o mouse, a linha é criada!</p>
+            <p>Com o <b>Lápis</b> ativo, clique, arraste e solte para desenhar as paredes com medidas automáticas em cm/m. Use o botão <b>Desfazer</b> se soltar sem querer!</p>
             <button class="btn-primary" onclick="startWithDefaultRoom()"><i class="fa-solid fa-play"></i> Começar com Quarto 5x5m</button>
         </div>
     </div>
@@ -277,6 +293,7 @@
     <header class="top-toolbar">
         <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
         <button class="tool-btn" id="pencil-tool-btn" onclick="togglePencilMode()"><i class="fa-solid fa-pencil"></i> Ferramenta Lápis (Paredes)</button>
+        <button class="tool-btn" id="undo-wall-btn" onclick="undoLastWall()" style="display:none; background: #fee2e2; color: #991b1b; border-color: #fecaca;"><i class="fa-solid fa-rotate-left"></i> Desfazer Última Parede</button>
         <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Novo Ambiente</div>
         <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto salvo com sucesso!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </header>
@@ -317,7 +334,10 @@
             </div>
         </sidebar>
 
-        <div id="canvas-container"></div>
+        <div id="canvas-container">
+            <!-- Container onde as tags HTML de medidas serão injetadas -->
+            <div id="labels-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>
+        </div>
     </div>
 
     <div class="view-switcher">
@@ -332,13 +352,15 @@
         let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         let offset = new THREE.Vector3();
 
-        // Variáveis do Lápis (Arrastar e Soltar)
+        // Variáveis do Lápis e Medidas
         let isPencilActive = false;
         let isDrawingLine = false;
         let pencilStartPoint = null;
         let roomPoints = [];
         let roomGroup = new THREE.Group();
         let guideLineMesh = null;
+        let activeMeasureLabel = null;
+        let wallMeasureElements = [];
 
         window.onload = () => {
             setup3DScene();
@@ -381,6 +403,10 @@
             dom.addEventListener('pointerup', onPointerUp);
 
             window.addEventListener('keydown', (e) => {
+                if (isPencilActive && (e.key === 'Backspace' || e.key === 'Delete')) {
+                    undoLastWall();
+                    return;
+                }
                 if (!selectedObject) return;
                 const key = e.key.toLowerCase();
                 if (key === 'q') rotateSelected(-1);
@@ -389,6 +415,14 @@
             });
 
             animate();
+        }
+
+        function formatDistance(meters) {
+            if (meters < 1) {
+                return Math.round(meters * 100) + ' cm';
+            } else {
+                return meters.toFixed(2) + ' m';
+            }
         }
 
         function startWithDefaultRoom() {
@@ -407,22 +441,44 @@
         function togglePencilMode() {
             isPencilActive = !isPencilActive;
             const btn = document.getElementById('pencil-tool-btn');
+            const undoBtn = document.getElementById('undo-wall-btn');
+            
             if (isPencilActive) {
                 btn.classList.add('active-pencil');
+                undoBtn.style.display = 'flex';
                 controls.enabled = false;
                 roomPoints = [];
                 roomGroup.clear();
+                clearWallLabels();
                 if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
-                alert('Modo Lápis ativado! Clique e segure o mouse para arrastar e desenhar cada parte da parede.');
+                if (activeMeasureLabel) { activeMeasureLabel.remove(); activeMeasureLabel = null; }
+                alert('Modo Lápis ativado! Clique, arraste e solte para fazer as paredes. Se errar, clique em "Desfazer Última Parede".');
             } else {
                 btn.classList.remove('active-pencil');
+                undoBtn.style.display = 'none';
                 controls.enabled = true;
                 if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
+                if (activeMeasureLabel) { activeMeasureLabel.remove(); activeMeasureLabel = null; }
             }
+        }
+
+        function undoLastWall() {
+            if (roomPoints.length > 0) {
+                roomPoints.pop();
+                buildRoomGeometry();
+            } else {
+                alert('Não há paredes para desfazer.');
+            }
+        }
+
+        function clearWallLabels() {
+            wallMeasureElements.forEach(el => el.remove());
+            wallMeasureElements = [];
         }
 
         function buildRoomGeometry() {
             roomGroup.clear();
+            clearWallLabels();
             if (roomPoints.length < 3) return;
 
             const shape = new THREE.Shape();
@@ -440,6 +496,8 @@
             const wallHeight = 2.6;
             const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
 
+            const labelsContainer = document.getElementById('labels-container');
+
             for (let i = 0; i < roomPoints.length; i++) {
                 let p1 = roomPoints[i];
                 let p2 = roomPoints[(i + 1) % roomPoints.length];
@@ -456,6 +514,13 @@
                 wall.rotation.y = -angle;
 
                 roomGroup.add(wall);
+
+                // Criar tag HTML de medida para a parede fixa
+                let label = document.createElement('div');
+                label.className = 'measurement-label';
+                label.innerText = formatDistance(distance);
+                labelsContainer.appendChild(label);
+                wallMeasureElements.push({ element: label, position: new THREE.Vector3(midX, 1.2, midZ) });
             }
         }
 
@@ -647,6 +712,19 @@
                         let material = new THREE.LineBasicMaterial({ color: 0x4f46e5, linewidth: 3 });
                         guideLineMesh = new THREE.Line(geometry, material);
                         scene.add(guideLineMesh);
+
+                        // Medida em tempo real da linha guia
+                        let dist = pencilStartPoint.distanceTo(currentMousePoint);
+                        let mid = new THREE.Vector3().addVectors(pencilStartPoint, currentMousePoint).multiplyScalar(0.5);
+                        mid.y = 1.2;
+
+                        if (!activeMeasureLabel) {
+                            activeMeasureLabel = document.createElement('div');
+                            activeMeasureLabel.className = 'measurement-label';
+                            document.getElementById('labels-container').appendChild(activeMeasureLabel);
+                        }
+                        activeMeasureLabel.innerText = formatDistance(dist);
+                        updateLabelPosition(activeMeasureLabel, mid);
                     }
                 }
                 return;
@@ -683,6 +761,10 @@
                     scene.remove(guideLineMesh);
                     guideLineMesh = null;
                 }
+                if (activeMeasureLabel) {
+                    activeMeasureLabel.remove();
+                    activeMeasureLabel = null;
+                }
                 document.getElementById('setup-screen').style.display = 'none';
                 return;
             }
@@ -691,6 +773,28 @@
                 isDragging = false;
                 controls.enabled = true;
             }
+        }
+
+        function updateLabelPosition(labelElement, vector3D) {
+            let tempVector = vector3D.clone();
+            tempVector.project(camera);
+            const container = document.getElementById('canvas-container');
+            const x = (tempVector.x *  .5 + .5) * container.clientWidth;
+            const y = (tempVector.y * -.5 + .5) * container.clientHeight;
+            labelElement.style.left = `${x}px`;
+            labelElement.style.top = `${y}px`;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            // Atualiza posições das tags de medida das paredes fixas na tela 2D/3D
+            wallMeasureElements.forEach(item => {
+                updateLabelPosition(item.element, item.position);
+            });
+
+            renderer.render(scene, camera);
         }
 
         function selectObject(obj) {
@@ -712,12 +816,6 @@
                 selectedObject = null;
                 document.getElementById('selection-panel').style.display = 'none';
             }
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
         }
 
         function setView(mode) {
