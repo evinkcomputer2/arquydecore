@@ -9,10 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
-    <!-- Three.js e Controles de Interação 3D -->
+    <!-- Three.js e OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
 
     <style>
         * {
@@ -133,7 +132,7 @@
             background: #f4f4f5;
         }
 
-        /* PAINEL DE CONTROLE DO MÓVEL SELECIONADO (Girar / Excluir) */
+        /* PAINEL DE CONTROLE DO MÓVEL SELECIONADO */
         #selection-panel {
             position: absolute;
             top: 80px;
@@ -146,13 +145,19 @@
             flex-direction: column;
             gap: 8px;
             z-index: 100;
-            width: 200px;
+            width: 220px;
         }
 
         #selection-panel h4 {
             font-size: 12px;
             color: #71717a;
             text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        #selection-panel p {
+            font-size: 11px;
+            color: #a1a1aa;
             margin-bottom: 4px;
         }
 
@@ -298,13 +303,14 @@
         <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
         <button class="tool-btn"><i class="fa-solid fa-bars"></i> Novo projeto</button>
         <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Quarto (5x5m)</div>
-        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto salvo com sucesso no Firebase!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto salvo com sucesso!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </header>
 
     <!-- PAINEL DE CONTROLE DO MÓVEL SELECIONADO -->
     <div id="selection-panel">
         <h4 id="selected-name">Móvel Selecionado</h4>
-        <button class="action-btn btn-rotate" onclick="rotateSelected()"><i class="fa-solid fa-rotate"></i> Girar 45°</button>
+        <p>Pressione <b>R</b> para girar</p>
+        <button class="action-btn btn-rotate" onclick="rotateSelected()"><i class="fa-solid fa-rotate"></i> Girar (Tecla R)</button>
         <button class="action-btn btn-delete" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Excluir Móvel</button>
     </div>
 
@@ -339,9 +345,11 @@
     </div>
 
     <script>
-        let scene, camera, renderer, controls, transformControls;
-        let roomSize = 5, furnitures = [], selectedObject = null;
+        let scene, camera, renderer, controls;
+        let roomSize = 5, furnitures = [], selectedObject = null, isDragging = false;
         let raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
+        let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        let intersection = new THREE.Vector3(), offset = new THREE.Vector3();
 
         function initStudio() {
             const type = document.getElementById('room-type').value;
@@ -371,17 +379,6 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.maxPolarAngle = Math.PI / 2 - 0.02;
-
-            // TransformControls para mover e ajustar o objeto selecionado
-            transformControls = new THREE.TransformControls(camera, renderer.domElement);
-            transformControls.size = 0.75;
-            transformControls.space = 'local';
-            scene.add(transformControls);
-
-            // Desativa a rotação da câmera enquanto mexe no móvel
-            transformControls.addEventListener('dragging-changed', function (event) {
-                controls.enabled = !event.value;
-            });
 
             // Luzes
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -414,8 +411,21 @@
             wallLeft.position.set(-roomSize/2, 1.25, 0);
             scene.add(wallLeft);
 
-            // Evento de clique para selecionar móveis na cena
-            renderer.domElement.addEventListener('pointerdown', onPointerDown);
+            // Eventos de Mouse para arrastar clicando e segurando
+            const dom = renderer.domElement;
+            dom.addEventListener('pointerdown', onPointerDown);
+            dom.addEventListener('pointermove', onPointerMove);
+            dom.addEventListener('pointerup', onPointerUp);
+
+            // Evento de Teclado para Girar com "R"
+            window.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 'r' && selectedObject) {
+                    rotateSelected();
+                }
+                if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) {
+                    deleteSelected();
+                }
+            });
 
             animate();
         }
@@ -448,9 +458,31 @@
                 group.add(rack);
             }
             else if (type === 'table') {
-                const top = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.8), new THREE.MeshStandardMaterial({ color: 0xa16207 }));
+                // Tampo da mesa corrigido
+                const top = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.9), new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.3 }));
                 top.position.y = 0.75;
                 group.add(top);
+
+                // Pés estruturados da mesa
+                const legGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.75);
+                const legMat = new THREE.MeshStandardMaterial({ color: 0x18181b });
+                [-0.6, 0.6].forEach(x => {
+                    [-0.35, 0.35].forEach(z => {
+                        const leg = new THREE.Mesh(legGeo, legMat);
+                        leg.position.set(x, 0.375, z);
+                        group.add(leg);
+                    });
+                });
+
+                // Cadeiras realistas ao redor da mesa
+                const chairMat = new THREE.MeshStandardMaterial({ color: 0x3f3f46 });
+                [-0.8, 0.8].forEach(x => {
+                    const seatC = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.4), chairMat);
+                    seatC.position.set(x, 0.45, 0);
+                    const backC = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.05), chairMat);
+                    backC.position.set(x, 0.68, x > 0 ? -0.18 : 0.18);
+                    group.add(seatC, backC);
+                });
             }
             else if (type === 'armchair') {
                 const seat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.8), new THREE.MeshStandardMaterial({ color: 0x4f46e5 }));
@@ -463,8 +495,6 @@
             group.position.set(0, 0, 0);
             scene.add(group);
             furnitures.push(group);
-
-            // Seleciona automaticamente o móvel recém-criado
             selectObject(group);
         }
 
@@ -483,28 +513,54 @@
                 }
                 if (furnitures.includes(obj)) {
                     selectObject(obj);
+                    isDragging = true;
+                    controls.enabled = false; // Desativa a rotação da câmera ao arrastar o móvel
+
+                    // Calcula o deslocamento exato para o móvel acompanhar o mouse perfeitamente
+                    let planeIntersect = new THREE.Vector3();
+                    raycaster.ray.intersectPlane(plane, planeIntersect);
+                    offset.copy(obj.position).sub(planeIntersect);
                 }
+            }
+        }
+
+        function onPointerMove(event) {
+            if (!isDragging || !selectedObject) return;
+
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            let planeIntersect = new THREE.Vector3();
+            
+            if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
+                selectedObject.position.copy(planeIntersect.add(offset));
+                selectedObject.position.y = 0; // Mantém alinhado no chão
+            }
+        }
+
+        function onPointerUp() {
+            if (isDragging) {
+                isDragging = false;
+                controls.enabled = true; // Reativa os controles normais da câmera
             }
         }
 
         function selectObject(obj) {
             selectedObject = obj;
-            transformControls.attach(obj);
-            transformControls.setMode('translate'); // Modo de arrastar livre pelo chão
-
             document.getElementById('selected-name').innerText = obj.userData.name || 'Móvel';
             document.getElementById('selection-panel').style.display = 'flex';
         }
 
         function rotateSelected() {
             if (selectedObject) {
-                selectedObject.rotation.y += Math.PI / 4; // Gira 45 graus a cada clique
+                selectedObject.rotation.y += Math.PI / 4; // Gira 45°
             }
         }
 
         function deleteSelected() {
             if (selectedObject) {
-                transformControls.detach();
                 scene.remove(selectedObject);
                 furnitures = furnitures.filter(item => item !== selectedObject);
                 selectedObject = null;
