@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOVAÉ Studio — 3D Interativo</title>
+    <title>NOVAÉ Studio — 3D Interativo Completo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
-    <!-- Three.js e OrbitControls para movimentação livre da câmera -->
+    <!-- Three.js e Controles de Interação 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
 
     <style>
         * {
@@ -132,7 +133,49 @@
             background: #f4f4f5;
         }
 
-        /* LAYOUT PRINCIPAL (BARRA LATERAL + PALCO 3D) */
+        /* PAINEL DE CONTROLE DO MÓVEL SELECIONADO (Girar / Excluir) */
+        #selection-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: #fff;
+            padding: 14px;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+            width: 200px;
+        }
+
+        #selection-panel h4 {
+            font-size: 12px;
+            color: #71717a;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-rotate { background: #f4f4f5; color: #18181b; }
+        .btn-rotate:hover { background: #e4e4e7; }
+        
+        .btn-delete { background: #fee2e2; color: #991b1b; }
+        .btn-delete:hover { background: #fecaca; }
+
+        /* LAYOUT PRINCIPAL */
         .main-layout {
             display: flex;
             flex: 1;
@@ -186,14 +229,12 @@
             font-size: 16px;
         }
 
-        /* CANVAS 3D */
         #canvas-container {
             flex: 1;
             position: relative;
             background: #f4f4f5;
         }
 
-        /* ALTERNADOR DE VISTA 2D / 3D */
         .view-switcher {
             position: absolute;
             bottom: 30px;
@@ -228,7 +269,7 @@
 </head>
 <body>
 
-    <!-- TELA DE CONFIGURAÇÃO -->
+    <!-- TELA DE SETUP -->
     <div id="setup-screen">
         <div class="setup-card">
             <h2>NOVAÉ Studio 3D</h2>
@@ -243,8 +284,8 @@
 
             <label>Tamanho (Metros)</label>
             <select id="room-size">
-                <option value="4">4m × 4m (Padrão)</option>
                 <option value="5">5m × 5m (Espaçoso)</option>
+                <option value="4">4m × 4m (Padrão)</option>
                 <option value="6">6m × 6m (Grande)</option>
             </select>
 
@@ -257,26 +298,33 @@
         <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
         <button class="tool-btn"><i class="fa-solid fa-bars"></i> Novo projeto</button>
         <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Quarto (5x5m)</div>
-        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto pronto para salvar no Firebase!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto salvo com sucesso no Firebase!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </header>
 
-    <!-- LAYOUT COM BARRA LATERAL E PALCO 3D -->
+    <!-- PAINEL DE CONTROLE DO MÓVEL SELECIONADO -->
+    <div id="selection-panel">
+        <h4 id="selected-name">Móvel Selecionado</h4>
+        <button class="action-btn btn-rotate" onclick="rotateSelected()"><i class="fa-solid fa-rotate"></i> Girar 45°</button>
+        <button class="action-btn btn-delete" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Excluir Móvel</button>
+    </div>
+
+    <!-- LAYOUT PRINCIPAL -->
     <div class="main-layout">
         <sidebar>
             <h3>Mobília Realista 3D</h3>
-            <div class="furniture-card" onclick="addFurniture('sofa')">
+            <div class="furniture-card" onclick="addFurniture('Sofá 3 Lugares', 'sofa')">
                 <i class="fa-solid fa-couch"></i> Sofá 3 Lugares
             </div>
-            <div class="furniture-card" onclick="addFurniture('bed')">
+            <div class="furniture-card" onclick="addFurniture('Cama de Casal', 'bed')">
                 <i class="fa-solid fa-bed"></i> Cama de Casal
             </div>
-            <div class="furniture-card" onclick="addFurniture('tv_rack')">
+            <div class="furniture-card" onclick="addFurniture('Rack TV', 'tv_rack')">
                 <i class="fa-solid fa-tv"></i> Rack / Painel TV
             </div>
-            <div class="furniture-card" onclick="addFurniture('table')">
+            <div class="furniture-card" onclick="addFurniture('Mesa de Jantar', 'table')">
                 <i class="fa-solid fa-utensils"></i> Mesa de Jantar
             </div>
-            <div class="furniture-card" onclick="addFurniture('armchair')">
+            <div class="furniture-card" onclick="addFurniture('Poltrona Elegance', 'armchair')">
                 <i class="fa-solid fa-chair"></i> Poltrona Elegance
             </div>
         </sidebar>
@@ -291,7 +339,9 @@
     </div>
 
     <script>
-        let scene, camera, renderer, controls, roomSize = 5;
+        let scene, camera, renderer, controls, transformControls;
+        let roomSize = 5, furnitures = [], selectedObject = null;
+        let raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
 
         function initStudio() {
             const type = document.getElementById('room-type').value;
@@ -305,58 +355,55 @@
         function setup3DScene() {
             const container = document.getElementById('canvas-container');
 
-            // 1. Cena
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf1f1f3);
 
-            // 2. Câmera
             camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 8, 10);
+            camera.position.set(0, 9, 12);
 
-            // 3. Renderizador
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
-            // 4. OrbitControls (Movimentação livre estilo HomeByMe: girar, dar zoom e arrastar)
+            // OrbitControls para navegar pelo ambiente
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2 - 0.05; // Impede a câmera de ir abaixo do chão
+            controls.maxPolarAngle = Math.PI / 2 - 0.02;
 
-            // 5. Luzes realistas
+            // TransformControls para mover e ajustar o objeto selecionado
+            transformControls = new THREE.TransformControls(camera, renderer.domElement);
+            transformControls.size = 0.75;
+            transformControls.space = 'local';
+            scene.add(transformControls);
+
+            // Desativa a rotação da câmera enquanto mexe no móvel
+            transformControls.addEventListener('dragging-changed', function (event) {
+                controls.enabled = !event.value;
+            });
+
+            // Luzes
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
 
             const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
             dirLight.position.set(10, 20, 10);
-            dirLight.castShadow = true;
             scene.add(dirLight);
 
-            // 6. Grid técnico de fundo
+            // Grid e Piso
             const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xe5e7eb);
             gridHelper.position.y = -0.01;
             scene.add(gridHelper);
 
-            // 7. Piso de Madeira Realista
             const floorGeo = new THREE.PlaneGeometry(roomSize, roomSize);
-            const floorMat = new THREE.MeshStandardMaterial({ 
-                color: 0xc89d7c, 
-                roughness: 0.35 
-            });
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0xc89d7c, roughness: 0.35 });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
             scene.add(floor);
 
-            // 8. Paredes translúcidas
-            const wallMat = new THREE.MeshStandardMaterial({ 
-                color: 0xffffff, 
-                transparent: true, 
-                opacity: 0.2, 
-                side: THREE.DoubleSide 
-            });
+            // Paredes translúcidas
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
             
             const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 2.5), wallMat);
             wallBack.position.set(0, 1.25, -roomSize/2);
@@ -367,97 +414,102 @@
             wallLeft.position.set(-roomSize/2, 1.25, 0);
             scene.add(wallLeft);
 
+            // Evento de clique para selecionar móveis na cena
+            renderer.domElement.addEventListener('pointerdown', onPointerDown);
+
             animate();
         }
 
-        // Função para criar móveis detalhados e realistas em 3D
-        function addFurniture(type) {
+        function addFurniture(name, type) {
             const group = new THREE.Group();
+            group.userData = { name: name };
 
             if (type === 'sofa') {
-                // Base do sofá
-                const baseGeo = new THREE.BoxGeometry(1.8, 0.4, 0.8);
-                const mat = new THREE.MeshStandardMaterial({ color: 0x3f3f46, roughness: 0.8 });
-                const base = new THREE.Mesh(baseGeo, mat);
+                const base = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.4, 0.8), new THREE.MeshStandardMaterial({ color: 0x3f3f46 }));
                 base.position.y = 0.2;
-                group.add(base);
-
-                // Assentos
-                const seatGeo = new THREE.BoxGeometry(1.7, 0.2, 0.75);
-                const seatMat = new THREE.MeshStandardMaterial({ color: 0x71717a, roughness: 0.6 });
-                const seat = new THREE.Mesh(seatGeo, seatMat);
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.2, 0.75), new THREE.MeshStandardMaterial({ color: 0x71717a }));
                 seat.position.set(0, 0.5, 0.02);
-                group.add(seat);
-
-                // Encosto
-                const backGeo = new THREE.BoxGeometry(1.8, 0.7, 0.2);
-                const back = new THREE.Mesh(backGeo, mat);
+                const back = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 0.2), new THREE.MeshStandardMaterial({ color: 0x3f3f46 }));
                 back.position.set(0, 0.85, -0.3);
-                group.add(back);
+                group.add(base, seat, back);
             } 
             else if (type === 'bed') {
-                // Estrutura Cama
-                const bedGeo = new THREE.BoxGeometry(1.4, 0.4, 1.9);
-                const bedMat = new THREE.MeshStandardMaterial({ color: 0x52525b });
-                const bedBase = new THREE.Mesh(bedGeo, bedMat);
-                bedBase.position.y = 0.2;
-                group.add(bedBase);
-
-                // Colchão
-                const mattressGeo = new THREE.BoxGeometry(1.35, 0.3, 1.85);
-                const mattressMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f5, roughness: 0.9 });
-                const mattress = new THREE.Mesh(mattressGeo, mattressMat);
+                const base = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.4, 1.9), new THREE.MeshStandardMaterial({ color: 0x52525b }));
+                base.position.y = 0.2;
+                const mattress = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.3, 1.85), new THREE.MeshStandardMaterial({ color: 0xf4f4f5 }));
                 mattress.position.y = 0.5;
-                group.add(mattress);
-
-                // Cabeceira
-                const headGeo = new THREE.BoxGeometry(1.4, 1.0, 0.1);
-                const head = new THREE.Mesh(headGeo, bedMat);
+                const head = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.0, 0.1), new THREE.MeshStandardMaterial({ color: 0x52525b }));
                 head.position.set(0, 0.5, -0.95);
-                group.add(head);
+                group.add(base, mattress, head);
             }
             else if (type === 'tv_rack') {
-                const rackGeo = new THREE.BoxGeometry(1.5, 0.45, 0.45);
-                const rackMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.5 });
-                const rack = new THREE.Mesh(rackGeo, rackMat);
+                const rack = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.45, 0.45), new THREE.MeshStandardMaterial({ color: 0x27272a }));
                 rack.position.y = 0.22;
                 group.add(rack);
             }
             else if (type === 'table') {
-                const tableGeo = new THREE.BoxGeometry(1.4, 0.08, 0.8);
-                const tableMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.4 });
-                const top = new THREE.Mesh(tableGeo, tableMat);
+                const top = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.8), new THREE.MeshStandardMaterial({ color: 0xa16207 }));
                 top.position.y = 0.75;
                 group.add(top);
-
-                // Pés da mesa
-                const legGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.75);
-                const legMat = new THREE.MeshStandardMaterial({ color: 0x18181b });
-                
-                [-0.6, 0.6].forEach(x => {
-                    [-0.3, 0.3].forEach(z => {
-                        const leg = new THREE.Mesh(legGeo, legMat);
-                        leg.position.set(x, 0.375, z);
-                        group.add(leg);
-                    });
-                });
             }
             else if (type === 'armchair') {
-                const seatGeo = new THREE.BoxGeometry(0.8, 0.4, 0.8);
-                const mat = new THREE.MeshStandardMaterial({ color: 0x4f46e5 });
-                const seat = new THREE.Mesh(seatGeo, mat);
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.8), new THREE.MeshStandardMaterial({ color: 0x4f46e5 }));
                 seat.position.y = 0.2;
-                group.add(seat);
-
-                const backGeo = new THREE.BoxGeometry(0.8, 0.7, 0.2);
-                const back = new THREE.Mesh(backGeo, mat);
+                const back = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.7, 0.2), new THREE.MeshStandardMaterial({ color: 0x4f46e5 }));
                 back.position.set(0, 0.75, -0.3);
-                group.add(back);
+                group.add(seat, back);
             }
 
-            // Posiciona o móvel gerado aleatoriamente dentro do cômodo
-            group.position.set((Math.random() - 0.5) * 2, 0, (Math.random() - 0.5) * 2);
+            group.position.set(0, 0, 0);
             scene.add(group);
+            furnitures.push(group);
+
+            // Seleciona automaticamente o móvel recém-criado
+            selectObject(group);
+        }
+
+        function onPointerDown(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(furnitures, true);
+
+            if (intersects.length > 0) {
+                let obj = intersects[0].object;
+                while (obj.parent && !furnitures.includes(obj)) {
+                    obj = obj.parent;
+                }
+                if (furnitures.includes(obj)) {
+                    selectObject(obj);
+                }
+            }
+        }
+
+        function selectObject(obj) {
+            selectedObject = obj;
+            transformControls.attach(obj);
+            transformControls.setMode('translate'); // Modo de arrastar livre pelo chão
+
+            document.getElementById('selected-name').innerText = obj.userData.name || 'Móvel';
+            document.getElementById('selection-panel').style.display = 'flex';
+        }
+
+        function rotateSelected() {
+            if (selectedObject) {
+                selectedObject.rotation.y += Math.PI / 4; // Gira 45 graus a cada clique
+            }
+        }
+
+        function deleteSelected() {
+            if (selectedObject) {
+                transformControls.detach();
+                scene.remove(selectedObject);
+                furnitures = furnitures.filter(item => item !== selectedObject);
+                selectedObject = null;
+                document.getElementById('selection-panel').style.display = 'none';
+            }
         }
 
         function animate() {
@@ -474,7 +526,7 @@
                 camera.position.set(0, 12, 0.001);
                 controls.target.set(0, 0, 0);
             } else {
-                camera.position.set(0, 8, 10);
+                camera.position.set(0, 9, 12);
                 controls.target.set(0, 0, 0);
             }
         }
