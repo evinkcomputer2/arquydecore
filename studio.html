@@ -157,7 +157,7 @@
 
         #selection-panel p {
             font-size: 11px;
-            color: #a1a1aa;
+            color: #71717a;
             margin-bottom: 4px;
         }
 
@@ -310,7 +310,7 @@
     <div id="selection-panel">
         <h4 id="selected-name">Móvel Selecionado</h4>
         <p>Pressione <b>R</b> para girar</p>
-        <button class="action-btn btn-rotate" onclick="rotateSelected()"><i class="fa-solid fa-rotate"></i> Girar (Tecla R)</button>
+        <button class="action-btn btn-rotate" onclick="rotateSelected()"><i class="fa-solid fa-rotate"></i> Girar 45° (Tecla R)</button>
         <button class="action-btn btn-delete" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Excluir Móvel</button>
     </div>
 
@@ -349,7 +349,7 @@
         let roomSize = 5, furnitures = [], selectedObject = null, isDragging = false;
         let raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
         let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-        let intersection = new THREE.Vector3(), offset = new THREE.Vector3();
+        let offset = new THREE.Vector3();
 
         function initStudio() {
             const type = document.getElementById('room-type').value;
@@ -417,7 +417,7 @@
             dom.addEventListener('pointermove', onPointerMove);
             dom.addEventListener('pointerup', onPointerUp);
 
-            // Evento de Teclado para Girar com "R"
+            // Evento de Teclado para Girar com "R" ou Excluir com Delete/Backspace
             window.addEventListener('keydown', (e) => {
                 if (e.key.toLowerCase() === 'r' && selectedObject) {
                     rotateSelected();
@@ -476,12 +476,18 @@
 
                 // Cadeiras realistas ao redor da mesa
                 const chairMat = new THREE.MeshStandardMaterial({ color: 0x3f3f46 });
-                [-0.8, 0.8].forEach(x => {
-                    const seatC = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.4), chairMat);
-                    seatC.position.set(x, 0.45, 0);
-                    const backC = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.05), chairMat);
-                    backC.position.set(x, 0.68, x > 0 ? -0.18 : 0.18);
-                    group.add(seatC, backC);
+                [-0.6, 0.6].forEach(x => {
+                    const seatC1 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.05, 0.35), chairMat);
+                    seatC1.position.set(x, 0.45, -0.65);
+                    const backC1 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.05), chairMat);
+                    backC1.position.set(x, 0.65, -0.8);
+                    
+                    const seatC2 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.05, 0.35), chairMat);
+                    seatC2.position.set(x, 0.45, 0.65);
+                    const backC2 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.05), chairMat);
+                    backC2.position.set(x, 0.65, 0.8);
+                    
+                    group.add(seatC1, backC1, seatC2, backC2);
                 });
             }
             else if (type === 'armchair') {
@@ -516,7 +522,6 @@
                     isDragging = true;
                     controls.enabled = false; // Desativa a rotação da câmera ao arrastar o móvel
 
-                    // Calcula o deslocamento exato para o móvel acompanhar o mouse perfeitamente
                     let planeIntersect = new THREE.Vector3();
                     raycaster.ray.intersectPlane(plane, planeIntersect);
                     offset.copy(obj.position).sub(planeIntersect);
