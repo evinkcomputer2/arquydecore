@@ -274,7 +274,7 @@
         <div class="setup-card">
             <div style="font-size: 40px; color: #4f46e5; margin-bottom: 12px;"><i class="fa-solid fa-pen-ruler"></i></div>
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Desenhe o formato do seu cômodo clique a clique usando a ferramenta <b>Lápis</b> ou clique no botão abaixo para usar o modelo padrão de 5x5m.</p>
+            <p>Desenhe o formato do seu cômodo clique a clique usando a ferramenta <b>Lápis</b> (com guia de linha em tempo real) ou clique abaixo para iniciar com o padrão 5x5m.</p>
             <button class="btn-primary" onclick="startWithDefaultRoom()"><i class="fa-solid fa-play"></i> Começar com Quarto 5x5m</button>
         </div>
     </div>
@@ -311,7 +311,7 @@
             <div class="furniture-card" onclick="addFurniture('Rack TV', 'tv_rack')">
                 <i class="fa-solid fa-tv"></i> Rack / Painel TV
             </div>
-            <div class="furniture-card" onclick="addFurniture('Televisão (Paredes)', 'tv')">
+            <div class="furniture-card" onclick="addFurniture('Televisão (Parede)', 'tv')">
                 <i class="fa-solid fa-desktop"></i> Televisão (Parede)
             </div>
             <div class="furniture-card" onclick="addFurniture('Setup Gamer', 'gamer_setup')">
@@ -341,11 +341,11 @@
         let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         let offset = new THREE.Vector3();
 
-        // Variáveis do Lápis e Paredes
+        // Variáveis do Lápis e Linha Guia
         let isPencilActive = false;
         let roomPoints = [];
         let roomGroup = new THREE.Group();
-        let temporaryLineMesh = null;
+        let guideLineMesh = null;
 
         window.onload = () => {
             setup3DScene();
@@ -406,7 +406,6 @@
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('project-title').innerText = 'Projeto: Quarto Personalizado (5x5m)';
             
-            // Desenhar sala quadrada padrão 5x5
             roomPoints = [
                 new THREE.Vector3(-2.5, 0, -2.5),
                 new THREE.Vector3(2.5, 0, -2.5),
@@ -421,13 +420,15 @@
             const btn = document.getElementById('pencil-tool-btn');
             if (isPencilActive) {
                 btn.classList.add('active-pencil');
-                controls.enabled = false; // Desativa órbita para desenhar com cliques
+                controls.enabled = false;
                 roomPoints = [];
                 roomGroup.clear();
-                alert('Modo Lápis ativado! Clique no plano 3D para marcar os cantos do seu terreno/cômodo. Dê um duplo clique ou feche o polígono para gerar as paredes.');
+                if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
+                alert('Modo Lápis ativado! Clique para criar os cantos. Uma linha guia acompanhará o seu mouse. Clique próximo ao ponto inicial para fechar o cômodo.');
             } else {
                 btn.classList.remove('active-pencil');
                 controls.enabled = true;
+                if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
             }
         }
 
@@ -435,7 +436,6 @@
             roomGroup.clear();
             if (roomPoints.length < 3) return;
 
-            // Criar forma do chão baseada nos pontos
             const shape = new THREE.Shape();
             roomPoints.forEach((pt, index) => {
                 if (index === 0) shape.moveTo(pt.x, pt.z);
@@ -448,7 +448,6 @@
             floor.rotation.x = Math.PI / 2;
             roomGroup.add(floor);
 
-            // Construir paredes verticais ao longo de cada aresta
             const wallHeight = 2.6;
             const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
 
@@ -460,12 +459,10 @@
                 let wallGeo = new THREE.PlaneGeometry(distance, wallHeight);
                 let wall = new THREE.Mesh(wallGeo, wallMat);
 
-                // Posicionar parede no centro da aresta
                 let midX = (p1.x + p2.x) / 2;
                 let midZ = (p1.z + p2.z) / 2;
                 wall.position.set(midX, wallHeight / 2, midZ);
 
-                // Rotacionar na direção correta
                 let angle = Math.atan2(p2.z - p1.z, p2.x - p1.x);
                 wall.rotation.y = -angle;
 
@@ -501,7 +498,6 @@
                 group.add(rack);
             }
             else if (type === 'tv') {
-                // TV de parede grudada (painel/suporte embutido)
                 const wallMount = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.8, 0.04), new THREE.MeshStandardMaterial({ color: 0x27272a }));
                 wallMount.position.y = 1.3;
                 wallMount.position.z = -0.02;
@@ -613,28 +609,26 @@
 
             raycaster.setFromCamera(mouse, camera);
 
-            // Se o modo Lápis estiver ativo, registra pontos do cômodo
             if (isPencilActive) {
                 let planeIntersect = new THREE.Vector3();
                 if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
-                    roomPoints.push(new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2));
+                    let newPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
                     
                     if (roomPoints.length >= 3) {
-                        // Se clicar próximo ao primeiro ponto, fecha o polígono
-                        if (roomPoints[0].distanceTo(roomPoints[roomPoints.length - 1]) < 0.6) {
-                            roomPoints.pop();
+                        if (roomPoints[0].distanceTo(newPoint) < 0.6) {
+                            roomPoints.push(roomPoints[0]); // Fecha o loop
                             buildRoomGeometry();
                             togglePencilMode();
                             document.getElementById('setup-screen').style.display = 'none';
                             return;
                         }
                     }
+                    roomPoints.push(newPoint);
                     buildRoomGeometry();
                 }
                 return;
             }
 
-            // Seleção e Arraste de Móveis
             const intersects = raycaster.intersectObjects(furnitures, true);
             if (intersects.length > 0) {
                 let obj = intersects[0].object;
@@ -654,14 +648,33 @@
         }
 
         function onPointerMove(event) {
-            if (!isDragging || !selectedObject || isPencilActive) return;
-
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
             let planeIntersect = new THREE.Vector3();
+
+            if (isPencilActive) {
+                if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
+                    let currentMousePoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
+                    
+                    // Atualiza linha guia seguindo o mouse
+                    if (roomPoints.length > 0) {
+                        let lastPoint = roomPoints[roomPoints.length - 1];
+                        if (guideLineMesh) scene.remove(guideLineMesh);
+
+                        let points = [lastPoint, currentMousePoint];
+                        let geometry = new THREE.BufferGeometry().setFromPoints(points);
+                        let material = new THREE.LineBasicMaterial({ color: 0x4f46e5, linewidth: 3 });
+                        guideLineMesh = new THREE.Line(geometry, material);
+                        scene.add(guideLineMesh);
+                    }
+                }
+                return;
+            }
+
+            if (!isDragging || !selectedObject) return;
             
             if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
                 selectedObject.position.copy(planeIntersect.add(offset));
