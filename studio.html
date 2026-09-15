@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
-    <!-- Biblioteca Three.js para o 3D -->
+    <!-- Biblioteca Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
@@ -21,7 +21,7 @@
         }
 
         body {
-            background-color: #f4f4f5;
+            background-color: #f8f9fa;
             color: #18181b;
             height: 100vh;
             overflow: hidden;
@@ -41,7 +41,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 2000;
         }
 
         .setup-card {
@@ -100,7 +100,7 @@
             background: #27272a;
         }
 
-        /* TOPO ESTILO HOMEBYME */
+        /* BARRA SUPERIOR ESTILO HOMEBYME */
         .top-toolbar {
             height: 60px;
             background: #fff;
@@ -108,7 +108,7 @@
             display: flex;
             align-items: center;
             padding: 0 20px;
-            gap: 15px;
+            gap: 10px;
             z-index: 10;
         }
 
@@ -117,7 +117,7 @@
             border: 1px solid #e4e4e7;
             padding: 8px 14px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             display: flex;
@@ -131,14 +131,20 @@
             background: #f4f4f5;
         }
 
-        /* CANVAS 3D */
+        .tool-btn.active-yellow {
+            background: #ffeb3b;
+            border-color: #fbc02d;
+            color: #000;
+        }
+
+        /* ÁREA DE RENDERIZAÇÃO 3D */
         #canvas-container {
             flex: 1;
             width: 100%;
             position: relative;
         }
 
-        /* BARRA DE ALTERNÂNCIA 2D/3D FLUTUANTE */
+        /* ALTERNADOR DE VISTA 2D / 3D INFERIOR */
         .view-switcher {
             position: absolute;
             bottom: 30px;
@@ -154,7 +160,7 @@
         }
 
         .view-btn {
-            padding: 8px 16px;
+            padding: 8px 20px;
             border: none;
             background: transparent;
             font-weight: 600;
@@ -162,6 +168,7 @@
             cursor: pointer;
             border-radius: 6px;
             color: #71717a;
+            transition: all 0.2s;
         }
 
         .view-btn.active {
@@ -172,24 +179,24 @@
 </head>
 <body>
 
-    <!-- TELA DE CONFIGURAÇÃO DE TAMANHO -->
+    <!-- TELA DE CONFIGURAÇÃO INICIAL -->
     <div id="setup-screen">
         <div class="setup-card">
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Selecione o ambiente e as dimensões iniciais.</p>
+            <p>Selecione o tipo de ambiente e as dimensões do cômodo.</p>
             
-            <label>Tipo de Ambiente</label>
+            <label>Ambiente</label>
             <select id="room-type">
                 <option value="Sala de Estar">Sala de Estar</option>
                 <option value="Quarto">Quarto</option>
                 <option value="Cozinha">Cozinha</option>
             </select>
 
-            <label>Tamanho do Cômodo</label>
+            <label>Tamanho (Metros)</label>
             <select id="room-size">
                 <option value="4">4m × 4m (Padrão)</option>
-                <option value="5">5m × 5m (Espaçoso)</option>
-                <option value="3">3m × 3m (Compacto)</option>
+                <option value="5">5m × 4m (Retangular)</option>
+                <option value="6">6m × 5m (Grande)</option>
             </select>
 
             <button class="btn-primary" onclick="initStudio()">Criar Ambiente 3D</button>
@@ -198,16 +205,17 @@
 
     <!-- BARRA SUPERIOR -->
     <header class="top-toolbar">
-        <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
+        <button class="tool-btn active-yellow" onclick="location.reload()"><i class="fa-solid fa-house"></i></button>
         <button class="tool-btn"><i class="fa-solid fa-bars"></i> Novo projeto</button>
-        <div style="flex: 1; text-align: center; font-weight: 600; color: #71717a;" id="project-title">Projeto: Sala de Estar (4x4m)</div>
-        <button class="tool-btn" style="background: #4f46e5; color: #fff; border: none;" onclick="saveToFirebase模拟()"><i class="fa-solid fa-floppy-disk"></i> Salvar Projeto</button>
+        <button class="tool-btn"><i class="fa-solid fa-layer-group"></i> Andar térreo</button>
+        <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Sala de Estar (4x4m)</div>
+        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="salvarFirebase()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </header>
 
-    <!-- ÁREA DO 3D -->
+    <!-- CONTAINER 3D -->
     <div id="canvas-container"></div>
 
-    <!-- ALTERNADOR DE VISTA 2D / 3D -->
+    <!-- BARRA 2D / 3D -->
     <div class="view-switcher">
         <button class="view-btn" onclick="setView('2D')">2D</button>
         <button class="view-btn active" onclick="setView('3D')">3D</button>
@@ -230,11 +238,11 @@
 
             // 1. Cena
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf4f4f5);
+            scene.background = new THREE.Color(0xf8f9fa);
 
             // 2. Câmera
             camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 10, 12);
+            camera.position.set(0, 8, 10);
             camera.lookAt(0, 0, 0);
 
             // 3. Renderizador
@@ -243,42 +251,44 @@
             container.appendChild(renderer.domElement);
 
             // 4. Luzes
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
             directionalLight.position.set(10, 20, 10);
             scene.add(directionalLight);
 
-            // 5. Piso de Madeira Realista (Criado via procedural/cor)
+            // 5. Grid de Fundo (Piso Técnico)
+            const gridHelper = new THREE.GridHelper(30, 30, 0xdddddd, 0x11111122);
+            gridHelper.position.y = -0.01;
+            scene.add(gridHelper);
+
+            // 6. Piso de Madeira Realista do Cômodo
             const floorGeo = new THREE.PlaneGeometry(roomSize, roomSize);
             const floorMat = new THREE.MeshStandardMaterial({ 
-                color: 0xc49a6c, 
-                roughness: 0.4 
+                color: 0xd7ccc8, // Tom amadeirado claro
+                roughness: 0.5 
             });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
 
-            // 6. Paredes translúcidas (Estilo HomeByMe)
+            // 7. Paredes Translúcidas Estilo HomeByMe
             const wallMat = new THREE.MeshStandardMaterial({ 
                 color: 0xffffff, 
                 transparent: true, 
-                opacity: 0.3, 
+                opacity: 0.25, 
                 side: THREE.DoubleSide 
             });
             
-            // Parede Fundo
-            const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 3), wallMat);
-            wallBack.position.set(0, 1.5, -roomSize/2);
+            const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 2.5), wallMat);
+            wallBack.position.set(0, 1.25, -roomSize/2);
             scene.add(wallBack);
 
-            // Parede Esquerda
-            const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 3), wallMat);
+            const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 2.5), wallMat);
             wallLeft.rotation.y = Math.PI / 2;
-            wallLeft.position.set(-roomSize/2, 1.5, 0);
+            wallLeft.position.set(-roomSize/2, 1.25, 0);
             scene.add(wallLeft);
 
-            // Loop de animação renderizando a cena
             animate();
         }
 
@@ -292,17 +302,16 @@
             event.target.classList.add('active');
 
             if (mode === '2D') {
-                camera.position.set(0, 15, 0.001); // Visão de cima (Planta Baixa)
+                camera.position.set(0, 12, 0.001); // Visão superior estilo planta baixa
                 camera.lookAt(0, 0, 0);
             } else {
-                camera.position.set(0, 10, 12); // Visão 3D em perspectiva
+                camera.position.set(0, 8, 10); // Visão perspectiva 3D
                 camera.lookAt(0, 0, 0);
             }
         }
 
-        function saveToFirebase模拟() {
-            alert("Estrutura pronta para salvar no Firebase! Os dados do tamanho (" + roomSize + "m) foram capturados.");
-            // Aqui você integrará o SDK do Firebase para salvar os dados na nuvem futuramente.
+        function salvarFirebase() {
+            alert("Dados do projeto (" + roomSize + "m) prontos para salvar no Firebase!");
         }
 
         window.addEventListener('resize', () => {
