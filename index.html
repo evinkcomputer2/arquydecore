@@ -144,6 +144,12 @@
                     <span>Favoritos</span>
                 </button>
 
+                <!-- LINK DIRETO PARA O NOVAÉ STUDIO -->
+                <a href="studio.html" class="nav-item" style="text-decoration: none; display: flex; align-items: center; margin-top: 5px; background: rgba(79, 70, 229, 0.08); color: #4f46e5;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>NOVAÉ Studio 2D</span>
+                </a>
+
                 <p class="navigation-title">
                     CONTA
                 </p>
@@ -297,13 +303,11 @@
 
                             <div class="hero-actions">
 
-                                <button
-                                    class="primary-button"
-                                    id="newProjectButton"
-                                >
+                                <!-- ALTERADO TAMBÉM PARA LEVAR AO STUDIO -->
+                                <a href="studio.html" class="primary-button" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                                     <i class="fa-solid fa-plus"></i>
                                     Criar novo projeto
-                                </button>
+                                </a>
 
                                 <button
                                     class="secondary-button"
@@ -657,13 +661,10 @@
 
                         </div>
 
-                        <button
-                            class="primary-button"
-                            id="newProjectButtonProjects"
-                        >
+                        <a href="studio.html" class="primary-button" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                             <i class="fa-solid fa-plus"></i>
                             Novo projeto
-                        </button>
+                        </a>
 
                     </div>
 
@@ -1185,130 +1186,6 @@
             </div>
 
         </main>
-
-    </div>
-
-    <!-- NEW PROJECT MODAL -->
-
-    <div
-        class="modal-container"
-        id="projectModal"
-    >
-
-        <div class="modal">
-
-            <button
-                class="modal-close"
-                data-close-modal
-            >
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="modal-header">
-
-                <span class="modal-icon">
-                    <i class="fa-solid fa-cubes"></i>
-                </span>
-
-                <div>
-
-                    <span class="section-label">
-                        NOVO PROJETO
-                    </span>
-
-                    <h2>
-                        Comece uma nova criação
-                    </h2>
-
-                </div>
-
-            </div>
-
-            <form id="projectForm">
-
-                <div class="form-group">
-
-                    <label for="projectName">
-                        Nome do projeto
-                    </label>
-
-                    <input
-                        type="text"
-                        id="projectName"
-                        placeholder="Ex.: Apartamento dos sonhos"
-                        required
-                    >
-
-                </div>
-
-                <div class="form-group">
-
-                    <label for="projectType">
-                        Tipo de ambiente
-                    </label>
-
-                    <select id="projectType">
-
-                        <option value="Sala">
-                            Sala de estar
-                        </option>
-
-                        <option value="Quarto">
-                            Quarto
-                        </option>
-
-                        <option value="Cozinha">
-                            Cozinha
-                        </option>
-
-                        <option value="Escritório">
-                            Escritório
-                        </option>
-
-                        <option value="Banheiro">
-                            Banheiro
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label for="projectDescription">
-                        Descrição
-                    </label>
-
-                    <textarea
-                        id="projectDescription"
-                        rows="4"
-                        placeholder="Descreva brevemente seu projeto..."
-                    ></textarea>
-
-                </div>
-
-                <div class="modal-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        data-close-modal
-                    >
-                        Cancelar
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="primary-button"
-                    >
-                        Criar projeto
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
 
     </div>
 
