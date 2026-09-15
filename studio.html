@@ -285,7 +285,7 @@
         <div class="setup-card">
             <div style="font-size: 40px; color: #4f46e5; margin-bottom: 12px;"><i class="fa-solid fa-pen-ruler"></i></div>
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Com o <b>Lápis</b> ativo, clique, arraste e solte para desenhar as paredes com medidas automáticas em cm/m. Use o botão <b>Desfazer</b> se soltar sem querer!</p>
+            <p>Com o <b>Lápis</b> ativo, clique, arraste e solte para desenhar as paredes. As medidas em cm/m aparecem enquanto arrasta. Use o botão <b>Desfazer</b> se precisar!</p>
             <button class="btn-primary" onclick="startWithDefaultRoom()"><i class="fa-solid fa-play"></i> Começar com Quarto 5x5m</button>
         </div>
     </div>
@@ -335,7 +335,7 @@
         </sidebar>
 
         <div id="canvas-container">
-            <!-- Container onde as tags HTML de medidas serão injetadas -->
+            <!-- Container onde a tag HTML de medida ativa será injetada -->
             <div id="labels-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>
         </div>
     </div>
@@ -360,7 +360,7 @@
         let roomGroup = new THREE.Group();
         let guideLineMesh = null;
         let activeMeasureLabel = null;
-        let wallMeasureElements = [];
+        let currentMeasurePos = null;
 
         window.onload = () => {
             setup3DScene();
@@ -449,16 +449,13 @@
                 controls.enabled = false;
                 roomPoints = [];
                 roomGroup.clear();
-                clearWallLabels();
-                if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
-                if (activeMeasureLabel) { activeMeasureLabel.remove(); activeMeasureLabel = null; }
-                alert('Modo Lápis ativado! Clique, arraste e solte para fazer as paredes. Se errar, clique em "Desfazer Última Parede".');
+                cleanupDrawingState();
+                alert('Modo Lápis ativado! Clique, arraste e solte para fazer as paredes. As medidas só aparecem enquanto você arrasta.');
             } else {
                 btn.classList.remove('active-pencil');
                 undoBtn.style.display = 'none';
                 controls.enabled = true;
-                if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
-                if (activeMeasureLabel) { activeMeasureLabel.remove(); activeMeasureLabel = null; }
+                cleanupDrawingState();
             }
         }
 
@@ -471,14 +468,22 @@
             }
         }
 
-        function clearWallLabels() {
-            wallMeasureElements.forEach(el => el.remove());
-            wallMeasureElements = [];
+        function cleanupDrawingState() {
+            if (guideLineMesh) { 
+                scene.remove(guideLineMesh); 
+                guideLineMesh = null; 
+            }
+            if (activeMeasureLabel) { 
+                activeMeasureLabel.remove(); 
+                activeMeasureLabel = null; 
+            }
+            currentMeasurePos = null;
+            isDrawingLine = false;
+            pencilStartPoint = null;
         }
 
         function buildRoomGeometry() {
             roomGroup.clear();
-            clearWallLabels();
             if (roomPoints.length < 3) return;
 
             const shape = new THREE.Shape();
@@ -496,8 +501,6 @@
             const wallHeight = 2.6;
             const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
 
-            const labelsContainer = document.getElementById('labels-container');
-
             for (let i = 0; i < roomPoints.length; i++) {
                 let p1 = roomPoints[i];
                 let p2 = roomPoints[(i + 1) % roomPoints.length];
@@ -514,13 +517,6 @@
                 wall.rotation.y = -angle;
 
                 roomGroup.add(wall);
-
-                // Criar tag HTML de medida para a parede fixa
-                let label = document.createElement('div');
-                label.className = 'measurement-label';
-                label.innerText = formatDistance(distance);
-                labelsContainer.appendChild(label);
-                wallMeasureElements.push({ element: label, position: new THREE.Vector3(midX, 1.2, midZ) });
             }
         }
 
@@ -715,8 +711,8 @@
 
                         // Medida em tempo real da linha guia
                         let dist = pencilStartPoint.distanceTo(currentMousePoint);
-                        let mid = new THREE.Vector3().addVectors(pencilStartPoint, currentMousePoint).multiplyScalar(0.5);
-                        mid.y = 1.2;
+                        currentMeasurePos = new THREE.Vector3().addVectors(pencilStartPoint, currentMousePoint).multiplyScalar(0.5);
+                        currentMeasurePos.y = 1.2;
 
                         if (!activeMeasureLabel) {
                             activeMeasureLabel = document.createElement('div');
@@ -724,7 +720,7 @@
                             document.getElementById('labels-container').appendChild(activeMeasureLabel);
                         }
                         activeMeasureLabel.innerText = formatDistance(dist);
-                        updateLabelPosition(activeMeasureLabel, mid);
+                        updateLabelPosition(activeMeasureLabel, currentMeasurePos);
                     }
                 }
                 return;
@@ -751,20 +747,15 @@
                 if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
                     let endPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
                     
-                    if (pencilStartPoint.distanceTo(endPoint) > 0.1) {
+                    if (pencilStartPoint && pencilStartPoint.distanceTo(endPoint) > 0.1) {
                         roomPoints.push(endPoint);
                         buildRoomGeometry();
+                        // O próximo ponto inicial começa exatamente onde o último terminou para continuar desenhando
+                        pencilStartPoint = endPoint;
                     }
                 }
 
-                if (guideLineMesh) {
-                    scene.remove(guideLineMesh);
-                    guideLineMesh = null;
-                }
-                if (activeMeasureLabel) {
-                    activeMeasureLabel.remove();
-                    activeMeasureLabel = null;
-                }
+                cleanupDrawingState();
                 document.getElementById('setup-screen').style.display = 'none';
                 return;
             }
@@ -789,10 +780,10 @@
             requestAnimationFrame(animate);
             controls.update();
 
-            // Atualiza posições das tags de medida das paredes fixas na tela 2D/3D
-            wallMeasureElements.forEach(item => {
-                updateLabelPosition(item.element, item.position);
-            });
+            // Atualiza a posição da tag de medida ativa apenas enquanto o usuário estiver arrastando o mouse
+            if (activeMeasureLabel && currentMeasurePos) {
+                updateLabelPosition(activeMeasureLabel, currentMeasurePos);
+            }
 
             renderer.render(scene, camera);
         }
