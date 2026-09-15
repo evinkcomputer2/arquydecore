@@ -30,7 +30,6 @@
             flex-direction: column;
         }
 
-        /* TELA DE SETUP / ORIENTAÇÃO DO LÁPIS */
         #setup-screen {
             position: fixed;
             top: 0;
@@ -88,7 +87,6 @@
             background: #27272a;
         }
 
-        /* BARRA SUPERIOR */
         .top-toolbar {
             height: 60px;
             background: #fff;
@@ -125,7 +123,6 @@
             border-color: #4f46e5;
         }
 
-        /* PAINEL DE CONTROLE DO MÓVEL SELECIONADO */
         #selection-panel {
             position: absolute;
             top: 80px;
@@ -175,7 +172,6 @@
         .btn-delete { background: #fee2e2; color: #991b1b; }
         .btn-delete:hover { background: #fecaca; }
 
-        /* LAYOUT PRINCIPAL */
         .main-layout {
             display: flex;
             flex: 1;
@@ -269,17 +265,15 @@
 </head>
 <body>
 
-    <!-- TELA DE SETUP / ORIENTAÇÃO DO LÁPIS -->
     <div id="setup-screen">
         <div class="setup-card">
             <div style="font-size: 40px; color: #4f46e5; margin-bottom: 12px;"><i class="fa-solid fa-pen-ruler"></i></div>
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Desenhe o formato do seu cômodo clique a clique com a ferramenta <b>Lápis</b> (linha guia interativa). Dê um <b>duplo clique</b> no último ponto para fechar e finalizar as paredes!</p>
+            <p>Com o <b>Lápis</b> ativado, clique e **mantenha pressionado** o mouse para arrastar e desenhar cada parte da parede. Ao **soltar** o mouse, a linha é criada!</p>
             <button class="btn-primary" onclick="startWithDefaultRoom()"><i class="fa-solid fa-play"></i> Começar com Quarto 5x5m</button>
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR -->
     <header class="top-toolbar">
         <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
         <button class="tool-btn" id="pencil-tool-btn" onclick="togglePencilMode()"><i class="fa-solid fa-pencil"></i> Ferramenta Lápis (Paredes)</button>
@@ -287,7 +281,6 @@
         <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto salvo com sucesso!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </header>
 
-    <!-- PAINEL DE CONTROLE DO MÓVEL SELECIONADO -->
     <div id="selection-panel">
         <h4 id="selected-name">Móvel Selecionado</h4>
         <p><b>Q</b>: Girar Esquerda | <b>R</b>: Girar Direita</p>
@@ -298,7 +291,6 @@
         <button class="action-btn btn-delete" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Excluir Móvel</button>
     </div>
 
-    <!-- LAYOUT PRINCIPAL -->
     <div class="main-layout">
         <sidebar>
             <h3>Mobília Realista 3D</h3>
@@ -328,7 +320,6 @@
         <div id="canvas-container"></div>
     </div>
 
-    <!-- ALTERNADOR 2D / 3D -->
     <div class="view-switcher">
         <button class="view-btn" onclick="setView('2D')">2D</button>
         <button class="view-btn active" onclick="setView('3D')">3D</button>
@@ -341,8 +332,10 @@
         let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         let offset = new THREE.Vector3();
 
-        // Variáveis do Lápis e Linha Guia
+        // Variáveis do Lápis (Arrastar e Soltar)
         let isPencilActive = false;
+        let isDrawingLine = false;
+        let pencilStartPoint = null;
         let roomPoints = [];
         let roomGroup = new THREE.Group();
         let guideLineMesh = null;
@@ -371,7 +364,6 @@
             controls.dampingFactor = 0.05;
             controls.maxPolarAngle = Math.PI / 2 - 0.02;
 
-            // Luzes
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
 
@@ -379,19 +371,15 @@
             dirLight.position.set(10, 20, 10);
             scene.add(dirLight);
 
-            // Grid no chão
             const gridHelper = new THREE.GridHelper(50, 50, 0xcccccc, 0xe5e7eb);
             gridHelper.position.y = -0.01;
             scene.add(gridHelper);
 
-            // Eventos de Mouse
             const dom = renderer.domElement;
             dom.addEventListener('pointerdown', onPointerDown);
             dom.addEventListener('pointermove', onPointerMove);
             dom.addEventListener('pointerup', onPointerUp);
-            dom.addEventListener('dblclick', onDoubleClick); // Evento de Duplo Clique
 
-            // Teclado
             window.addEventListener('keydown', (e) => {
                 if (!selectedObject) return;
                 const key = e.key.toLowerCase();
@@ -425,7 +413,7 @@
                 roomPoints = [];
                 roomGroup.clear();
                 if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
-                alert('Modo Lápis ativado! Clique para criar os cantos. Dê um duplo clique para finalizar e sumir com a linha guia.');
+                alert('Modo Lápis ativado! Clique e segure o mouse para arrastar e desenhar cada parte da parede.');
             } else {
                 btn.classList.remove('active-pencil');
                 controls.enabled = true;
@@ -604,13 +592,23 @@
         }
 
         function onPointerDown(event) {
-            if (isPencilActive) return; // No modo lápis, usamos o dblclick para finalizar
-
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
+            let planeIntersect = new THREE.Vector3();
+
+            if (isPencilActive) {
+                if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
+                    pencilStartPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
+                    isDrawingLine = true;
+                    if (roomPoints.length === 0) {
+                        roomPoints.push(pencilStartPoint);
+                    }
+                }
+                return;
+            }
 
             const intersects = raycaster.intersectObjects(furnitures, true);
             if (intersects.length > 0) {
@@ -623,36 +621,9 @@
                     isDragging = true;
                     controls.enabled = false;
 
-                    let planeIntersect = new THREE.Vector3();
                     raycaster.ray.intersectPlane(plane, planeIntersect);
                     offset.copy(obj.position).sub(planeIntersect);
                 }
-            }
-        }
-
-        function onDoubleClick(event) {
-            if (!isPencilActive) return;
-
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            let planeIntersect = new THREE.Vector3();
-
-            if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
-                let finalPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
-                roomPoints.push(finalPoint);
-
-                // Remove a linha guia da tela
-                if (guideLineMesh) {
-                    scene.remove(guideLineMesh);
-                    guideLineMesh = null;
-                }
-
-                buildRoomGeometry();
-                togglePencilMode(); // Encerra o modo lápis
-                document.getElementById('setup-screen').style.display = 'none';
             }
         }
 
@@ -665,14 +636,13 @@
             let planeIntersect = new THREE.Vector3();
 
             if (isPencilActive) {
-                if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
-                    let currentMousePoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
-                    
-                    if (roomPoints.length > 0) {
-                        let lastPoint = roomPoints[roomPoints.length - 1];
+                if (isDrawingLine && pencilStartPoint) {
+                    if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
+                        let currentMousePoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
+
                         if (guideLineMesh) scene.remove(guideLineMesh);
 
-                        let points = [lastPoint, currentMousePoint];
+                        let points = [pencilStartPoint, currentMousePoint];
                         let geometry = new THREE.BufferGeometry().setFromPoints(points);
                         let material = new THREE.LineBasicMaterial({ color: 0x4f46e5, linewidth: 3 });
                         guideLineMesh = new THREE.Line(geometry, material);
@@ -690,35 +660,38 @@
             }
         }
 
-        function onPointerUp() {
-            if (isDragging) {
-                isDragging = false;
-                controls.enabled = true;
-            }
-        }
-
-        // Adicionando um clique simples no modo lápis para registrar vértices intermediários
-        window.addEventListener('click', (event) => {
-            if (!isPencilActive) return;
-            // Evita conflito com o dblclick
-            setTimeout(() => {
-                if (!isPencilActive) return;
+        function onPointerUp(event) {
+            if (isPencilActive && isDrawingLine) {
+                isDrawingLine = false;
                 const rect = renderer.domElement.getBoundingClientRect();
                 mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
                 mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
                 raycaster.setFromCamera(mouse, camera);
                 let planeIntersect = new THREE.Vector3();
+
                 if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
-                    let pt = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
-                    // Só adiciona se for um clique diferente do último ponto
-                    if (roomPoints.length === 0 || roomPoints[roomPoints.length - 1].distanceTo(pt) > 0.1) {
-                        roomPoints.push(pt);
+                    let endPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
+                    
+                    if (pencilStartPoint.distanceTo(endPoint) > 0.1) {
+                        roomPoints.push(endPoint);
                         buildRoomGeometry();
                     }
                 }
-            }, 200);
-        });
+
+                if (guideLineMesh) {
+                    scene.remove(guideLineMesh);
+                    guideLineMesh = null;
+                }
+                document.getElementById('setup-screen').style.display = 'none';
+                return;
+            }
+
+            if (isDragging) {
+                isDragging = false;
+                controls.enabled = true;
+            }
+        }
 
         function selectObject(obj) {
             selectedObject = obj;
