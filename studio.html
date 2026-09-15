@@ -13,6 +13,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
+    <!-- Firebase SDKs (Compat version para fácil uso no navegador) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -280,7 +284,7 @@
 </head>
 <body>
 
-    <div id="setup-screen">
+    <div id="setup-screen" style="display:none;">
         <div class="setup-card">
             <div style="font-size: 40px; color: #4f46e5; margin-bottom: 12px;"><i class="fa-solid fa-pen-ruler"></i></div>
             <h2>NOVAÉ Studio 3D</h2>
@@ -290,11 +294,12 @@
     </div>
 
     <header class="top-toolbar">
-        <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
+        <button class="tool-btn" onclick="newProject()"><i class="fa-solid fa-house"></i> Novo Projeto</button>
+        <button class="tool-btn" onclick="loadProjectPrompt()"><i class="fa-solid fa-folder-open"></i> Abrir por Código</button>
         <button class="tool-btn" id="pencil-tool-btn" onclick="togglePencilMode()"><i class="fa-solid fa-pencil"></i> Ferramenta Lápis (Paredes)</button>
         <button class="tool-btn" id="undo-wall-btn" onclick="undoLastWall()" style="display:none; background: #fee2e2; color: #991b1b; border-color: #fecaca;"><i class="fa-solid fa-rotate-left"></i> Desfazer Última Parede</button>
         <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Novo Ambiente</div>
-        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto salvo com sucesso!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+        <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="saveProjectToFirebase()"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar na Nuvem</button>
     </header>
 
     <div id="selection-panel">
@@ -322,8 +327,8 @@
             <div class="furniture-card" onclick="addFurniture('Televisão (Parede)', 'tv')">
                 <i class="fa-solid fa-desktop"></i> Televisão (Parede)
             </div>
-            <div class="furniture-card" onclick="addFurniture('PlayStation', 'playstation')">
-                <i class="fa-solid fa-gamepad"></i> PlayStation
+            <div class="furniture-card" onclick="addFurniture('PlayStation 5', 'playstation')">
+                <i class="fa-solid fa-gamepad"></i> PlayStation 5
             </div>
             <div class="furniture-card" onclick="addFurniture('Setup Gamer', 'gamer_setup')">
                 <i class="fa-solid fa-headset"></i> Setup Gamer
@@ -347,6 +352,20 @@
     </div>
 
     <script>
+        // ================= CONFIGURAÇÃO DO FIREBASE =================
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY_AQUI",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        // ============================================================
+
         let scene, camera, renderer, controls;
         let furnitures = [], selectedObject = null, isDragging = false;
         let raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
@@ -361,9 +380,24 @@
         let guideLineMesh = null;
         let activeMeasureLabel = null;
         let currentMeasurePos = null;
+        let currentProjectId = null;
 
         window.onload = () => {
             setup3DScene();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectIdParam = urlParams.get('projeto');
+            
+            if (projectIdParam) {
+                loadProjectFromFirebase(projectIdParam);
+            } else {
+                const savedLocalId = localStorage.getItem('arquydecore_last_id');
+                if (savedLocalId) {
+                    loadProjectFromFirebase(savedLocalId);
+                } else {
+                    document.getElementById('setup-screen').style.display = 'flex';
+                }
+            }
         };
 
         function setup3DScene() {
@@ -438,6 +472,86 @@
             buildRoomGeometry();
         }
 
+        async function saveProjectToFirebase() {
+            const projectData = {
+                roomPoints: roomPoints.map(p => ({ x: p.x, y: p.y, z: p.z })),
+                furnitures: furnitures.map(f => ({
+                    name: f.userData.name,
+                    type: f.userData.type,
+                    position: { x: f.position.x, y: f.position.y, z: f.position.z },
+                    rotation: { x: f.rotation.x, y: f.rotation.y, z: f.rotation.z }
+                })),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                let docRef;
+                if (currentProjectId) {
+                    docRef = db.collection('projetos').doc(currentProjectId);
+                    await docRef.set(projectData);
+                } else {
+                    docRef = await db.collection('projetos').add(projectData);
+                    currentProjectId = docRef.id;
+                }
+
+                localStorage.setItem('arquydecore_last_id', currentProjectId);
+                
+                const shareableLink = `${window.location.origin}${window.location.pathname}?projeto=${currentProjectId}`;
+                prompt('🎉 Projeto salvo com sucesso na nuvem! Copie o link abaixo:', shareableLink);
+            } catch (error) {
+                console.error('Erro ao salvar no Firebase:', error);
+                alert('Erro ao salvar o projeto. Verifique sua conexão.');
+            }
+        }
+
+        async function loadProjectFromFirebase(id) {
+            try {
+                const doc = await db.collection('projetos').doc(id).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    currentProjectId = doc.id;
+                    localStorage.setItem('arquydecore_last_id', currentProjectId);
+
+                    roomGroup.clear();
+                    furnitures.forEach(f => scene.remove(f));
+                    furnitures = [];
+
+                    if (data.roomPoints && data.roomPoints.length > 0) {
+                        roomPoints = data.roomPoints.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                        buildRoomGeometry();
+                    }
+
+                    if (data.furnitures) {
+                        data.furnitures.forEach(item => {
+                            createFurnitureObject(item.name, item.type, item.position, item.rotation);
+                        });
+                    }
+
+                    document.getElementById('project-title').innerText = `Projeto ID: ${currentProjectId.substring(0, 6)}...`;
+                    document.getElementById('setup-screen').style.display = 'none';
+                } else {
+                    alert('Projeto não encontrado.');
+                    document.getElementById('setup-screen').style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar do Firebase:', error);
+            }
+        }
+
+        function loadProjectPrompt() {
+            const id = prompt('Digite o ID ou código do projeto salvo:');
+            if (id) {
+                window.location.href = `${window.location.pathname}?projeto=${id.trim()}`;
+            }
+        }
+
+        function newProject() {
+            if (confirm('Deseja iniciar um novo projeto? As alterações não salvas serão perdidas.')) {
+                localStorage.removeItem('arquydecore_last_id');
+                window.location.href = window.location.pathname;
+            }
+        }
+
         function togglePencilMode() {
             isPencilActive = !isPencilActive;
             const btn = document.getElementById('pencil-tool-btn');
@@ -450,7 +564,7 @@
                 roomPoints = [];
                 roomGroup.clear();
                 cleanupDrawingState();
-                alert('Modo Lápis ativado! Clique, arraste e solte para desenhar as paredes do cômodo.');
+                alert('Modo Lápis ativado! Clique, arraste e solte para desenhar as paredes.');
             } else {
                 btn.classList.remove('active-pencil');
                 undoBtn.style.display = 'none';
@@ -469,14 +583,8 @@
         }
 
         function cleanupDrawingState() {
-            if (guideLineMesh) { 
-                scene.remove(guideLineMesh); 
-                guideLineMesh = null; 
-            }
-            if (activeMeasureLabel) { 
-                activeMeasureLabel.remove(); 
-                activeMeasureLabel = null; 
-            }
+            if (guideLineMesh) { scene.remove(guideLineMesh); guideLineMesh = null; }
+            if (activeMeasureLabel) { activeMeasureLabel.remove(); activeMeasureLabel = null; }
             currentMeasurePos = null;
             isDrawingLine = false;
             pencilStartPoint = null;
@@ -521,8 +629,13 @@
         }
 
         function addFurniture(name, type) {
+            createFurnitureObject(name, type, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 });
+            document.getElementById('setup-screen').style.display = 'none';
+        }
+
+        function createFurnitureObject(name, type, pos, rot) {
             const group = new THREE.Group();
-            group.userData = { name: name };
+            group.userData = { name: name, type: type };
 
             if (type === 'sofa') {
                 const base = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.4, 0.8), new THREE.MeshStandardMaterial({ color: 0x3f3f46 }));
@@ -557,20 +670,32 @@
                 group.add(wallMount, screen);
             }
             else if (type === 'playstation') {
-                // Console principal (estilo moderno na horizontal)
-                const consoleBody = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.32), new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.3 }));
-                consoleBody.position.y = 0.05;
-                
-                // Detalhes centrais (luz azul / fenda de disco)
-                const centerStripe = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.02, 0.33), new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x1d4ed8 }));
-                centerStripe.position.y = 0.05;
+                // PlayStation 5 na vertical posicionado em cima da mesa/rack
+                const plateMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f5, roughness: 0.4 });
+                const coreMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.2 });
+                const blueLedMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x1d4ed8 });
 
-                // Pequeno controle DualSense ao lado do console
+                const leftPlate = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.45, 0.30), plateMat);
+                leftPlate.position.set(-0.06, 0.225, 0);
+
+                const rightPlate = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.45, 0.30), plateMat);
+                rightPlate.position.set(0.06, 0.225, 0);
+
+                const core = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.44, 0.28), coreMat);
+                core.position.set(0, 0.225, 0);
+
+                const ledStripe = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.02, 0.29), blueLedMat);
+                ledStripe.position.set(0, 0.35, 0);
+
+                const stand = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.03, 0.22), coreMat);
+                stand.position.set(0, 0.015, 0);
+
                 const controllerBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.08), new THREE.MeshStandardMaterial({ color: 0xf4f4f5 }));
-                controllerBody.position.set(0.3, 0.02, 0);
+                controllerBody.position.set(0.25, 0.02, 0);
 
-                group.add(consoleBody, centerStripe, controllerBody);
-                // Posiciona a uma altura ideal para ficar sobre o rack abaixo da TV
+                group.add(leftPlate, rightPlate, core, ledStripe, stand, controllerBody);
+                
+                // Altura correta para ficar em cima de um rack ou mesa (~0.45m)
                 group.position.y = 0.45;
             }
             else if (type === 'gamer_setup') {
@@ -621,21 +746,6 @@
                         group.add(leg);
                     });
                 });
-
-                const chairMat = new THREE.MeshStandardMaterial({ color: 0x3f3f46 });
-                [-0.6, 0.6].forEach(x => {
-                    const seatC1 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.05, 0.35), chairMat);
-                    seatC1.position.set(x, 0.45, -0.65);
-                    const backC1 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.05), chairMat);
-                    backC1.position.set(x, 0.65, -0.8);
-                    
-                    const seatC2 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.05, 0.35), chairMat);
-                    seatC2.position.set(x, 0.45, 0.65);
-                    const backC2 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.05), chairMat);
-                    backC2.position.set(x, 0.65, 0.8);
-                    
-                    group.add(seatC1, backC1, seatC2, backC2);
-                });
             }
             else if (type === 'armchair') {
                 const mat = new THREE.MeshStandardMaterial({ color: 0x4f46e5 });
@@ -651,22 +761,14 @@
                 const armRight = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.45, 0.8), mat);
                 armRight.position.set(0.4, 0.45, 0);
 
-                [-0.32, 0.32].forEach(x => {
-                    [-0.32, 0.32].forEach(z => {
-                        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.015, 0.2), woodMat);
-                        leg.position.set(x, 0.1, z);
-                        group.add(leg);
-                    });
-                });
-
                 group.add(seat, back, armLeft, armRight);
             }
 
-            group.position.set(0, 0, 0);
+            group.position.set(pos.x, pos.y, pos.z);
+            group.rotation.set(rot.x, rot.y, rot.z);
             scene.add(group);
             furnitures.push(group);
             selectObject(group);
-            document.getElementById('setup-screen').style.display = 'none';
         }
 
         function onPointerDown(event) {
@@ -750,7 +852,7 @@
             
             if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
                 selectedObject.position.copy(planeIntersect.add(offset));
-                selectedObject.position.y = 0;
+                selectedObject.position.y = (selectedObject.userData.type === 'playstation') ? 0.45 : 0;
             }
         }
 
@@ -778,7 +880,6 @@
                 }
 
                 cleanupDrawingState();
-                document.getElementById('setup-screen').style.display = 'none';
                 return;
             }
 
