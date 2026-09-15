@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOVAÉ Studio — Crie seu Espaço</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f5;
+            color: #18181b;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* TELA DE CONFIGURAÇÃO INICIAL */
+        #setup-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .setup-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .setup-card h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .setup-card label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .setup-card select, .setup-card input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #18181b;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #3f3f46;
+        }
+
+        /* HEADER DO EDITOR */
+        header {
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid #e4e4e7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .project-info {
+            font-size: 14px;
+            color: #71717a;
+        }
+
+        /* LAYOUT PRINCIPAL DO EDITOR */
+        .editor-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* BARRA LATERAL (BIBLIOTECA) */
+        sidebar {
+            width: 280px;
+            background: #fff;
+            border-right: 1px solid #e4e4e7;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        sidebar h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #71717a;
+            margin-bottom: 5px;
+        }
+
+        .furniture-item {
+            background: #f4f4f5;
+            border: 1px solid #e4e4e7;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: grab;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .furniture-item:hover {
+            background: #e4e4e7;
+            border-color: #d1d5db;
+        }
+
+        /* ÁREA DA PLANTA (WORKSPACE) */
+        .workspace {
+            flex: 1;
+            background: #e9e9eb;
+            position: relative;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .room-canvas {
+            width: 600px;
+            height: 500px;
+            background: #ffffff;
+            border: 4px solid #18181b;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* MÓVEIS POSICIONADOS NO AMBIENTE */
+        .placed-furniture {
+            position: absolute;
+            background: #e0e7ff;
+            border: 2px solid #4f46e5;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #3730a3;
+            cursor: move;
+            user-select: none;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .placed-furniture .actions {
+            position: absolute;
+            top: -25px;
+            right: 0;
+            display: none;
+            background: #18181b;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .placed-furniture:hover .actions {
+            display: flex;
+        }
+
+        .actions button {
+            background: none;
+            border: none;
+            color: #fff;
+            padding: 3px 8px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .actions button:hover {
+            background: #3f3f46;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TELA DE SETUP INICIAL -->
+    <div id="setup-screen">
+        <div class="setup-card">
+            <h2>Criar Novo Projeto</h2>
+            <label for="room-type">Escolha o Ambiente</label>
+            <select id="room-type">
+                <option value="Sala de Estar">Sala de Estar</option>
+                <option value="Quarto">Quarto</option>
+                <option value="Cozinha">Cozinha</option>
+                <option value="Escritório">Escritório</option>
+            </select>
+
+            <label for="room-size">Tamanho (Metros)</label>
+            <select id="room-size">
+                <option value="4x4">4m × 4m (Médio)</option>
+                <option value="5x4">5m × 4m (Retangular)</option>
+                <option value="3x3">3m × 3m (Compacto)</option>
+            </select>
+
+            <button class="btn-primary" onclick="initStudio()">Começar a Projetar</button>
+        </div>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <header>
+        <div class="logo">NOVAÉ STUDIO</div>
+        <div class="project-info" id="project-label">Projeto: Sala de Estar (4x4m)</div>
+        <button class="btn-primary" style="width: auto; padding: 6px 15px; font-size: 14px;" onclick="location.reload()">Novo Projeto</button>
+    </header>
+
+    <!-- CONTAINER DO EDITOR -->
+    <div class="editor-container">
+        <!-- BIBLIOTECA DE MÓVEIS -->
+        <sidebar>
+            <h3>Mobília</h3>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Sofá 3 Lugares" data-w="160" data-h="80">Sofá 3 Lugares</div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Poltrona" data-w="70" data-h="70">Poltrona</div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Rack TV" data-w="140" data-h="40">Rack / Painel TV</div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa de Centro" data-w="90" data-h="50">Mesa de Centro</div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Cama Casal" data-w="140" data-h="190">Cama Casal</div>
+            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa Jantar" data-w="150" data-h="90">Mesa de Jantar</div>
+        </sidebar>
+
+        <!-- ÁREA DE TRABALHO / PLANTA -->
+        <div class="workspace" ondragover="allowDrop(event)" ondrop="drop(event)">
+            <div class="room-canvas" id="roomCanvas">
+                <!-- Móveis inseridos vão aparecer aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function initStudio() {
+            const roomType = document.getElementById('room-type').value;
+            const roomSize = document.getElementById('room-size').value;
+            
+            document.getElementById('project-label').innerText = `Projeto: ${roomType} (${roomSize}m)`;
+            document.getElementById('setup-screen').style.display = 'none';
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text/plain", JSON.stringify({
+                name: ev.target.getAttribute('data-name'),
+                width: ev.target.getAttribute('data-w'),
+                height: ev.target.getAttribute('data-h')
+            }));
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const canvas = document.getElementById('roomCanvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            // Posição do mouse dentro da planta
+            const x = ev.clientX - rect.left - 40;
+            const y = ev.clientY - rect.top - 20;
+
+            const data = JSON.parse(ev.dataTransfer.getData("text/plain"));
+
+            // Criar elemento visual na planta
+            const item = document.createElement('div');
+            item.className = 'placed-furniture';
+            item.style.left = `${Math.max(0, x)}px`;
+            item.style.top = `${Math.max(0, y)}px`;
+            item.style.width = `${data.width}px`;
+            item.style.height = `${data.height}px`;
+            
+            item.innerHTML = `
+                ${data.name}
+                <div class="actions">
+                    <button onclick="this.parentElement.parentElement.remove()">X</button>
+                </div>
+            `;
+
+            canvas.appendChild(item);
+        }
+    </script>
+</body>
+</html>
