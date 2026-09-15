@@ -145,7 +145,7 @@
             flex-direction: column;
             gap: 8px;
             z-index: 100;
-            width: 220px;
+            width: 240px;
         }
 
         #selection-panel h4 {
@@ -159,6 +159,7 @@
             font-size: 11px;
             color: #71717a;
             margin-bottom: 4px;
+            line-height: 1.4;
         }
 
         .action-btn {
@@ -170,6 +171,7 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             transition: background 0.2s;
         }
@@ -309,8 +311,11 @@
     <!-- PAINEL DE CONTROLE DO MÓVEL SELECIONADO -->
     <div id="selection-panel">
         <h4 id="selected-name">Móvel Selecionado</h4>
-        <p>Pressione <b>R</b> para girar</p>
-        <button class="action-btn btn-rotate" onclick="rotateSelected()"><i class="fa-solid fa-rotate"></i> Girar 45° (Tecla R)</button>
+        <p><b>Q</b>: Girar Esquerda | <b>R</b>: Girar Direita</p>
+        <div style="display: flex; gap: 6px;">
+            <button class="action-btn btn-rotate" style="flex:1;" onclick="rotateSelected(-1)"><i class="fa-solid fa-rotate-left"></i> Esquerda (Q)</button>
+            <button class="action-btn btn-rotate" style="flex:1;" onclick="rotateSelected(1)"><i class="fa-solid fa-rotate-right"></i> Direita (R)</button>
+        </div>
         <button class="action-btn btn-delete" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Excluir Móvel</button>
     </div>
 
@@ -417,12 +422,15 @@
             dom.addEventListener('pointermove', onPointerMove);
             dom.addEventListener('pointerup', onPointerUp);
 
-            // Evento de Teclado para Girar com "R" ou Excluir com Delete/Backspace
+            // Eventos de Teclado: Q (Esquerda), R (Direita), Delete/Backspace (Excluir)
             window.addEventListener('keydown', (e) => {
-                if (e.key.toLowerCase() === 'r' && selectedObject) {
-                    rotateSelected();
-                }
-                if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) {
+                if (!selectedObject) return;
+                const key = e.key.toLowerCase();
+                if (key === 'q') {
+                    rotateSelected(-1); // Esquerda
+                } else if (key === 'r') {
+                    rotateSelected(1);  // Direita
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
                     deleteSelected();
                 }
             });
@@ -458,12 +466,10 @@
                 group.add(rack);
             }
             else if (type === 'table') {
-                // Tampo da mesa corrigido
                 const top = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.9), new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.3 }));
                 top.position.y = 0.75;
                 group.add(top);
 
-                // Pés estruturados da mesa
                 const legGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.75);
                 const legMat = new THREE.MeshStandardMaterial({ color: 0x18181b });
                 [-0.6, 0.6].forEach(x => {
@@ -474,7 +480,6 @@
                     });
                 });
 
-                // Cadeiras realistas ao redor da mesa
                 const chairMat = new THREE.MeshStandardMaterial({ color: 0x3f3f46 });
                 [-0.6, 0.6].forEach(x => {
                     const seatC1 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.05, 0.35), chairMat);
@@ -520,7 +525,7 @@
                 if (furnitures.includes(obj)) {
                     selectObject(obj);
                     isDragging = true;
-                    controls.enabled = false; // Desativa a rotação da câmera ao arrastar o móvel
+                    controls.enabled = false;
 
                     let planeIntersect = new THREE.Vector3();
                     raycaster.ray.intersectPlane(plane, planeIntersect);
@@ -541,14 +546,14 @@
             
             if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
                 selectedObject.position.copy(planeIntersect.add(offset));
-                selectedObject.position.y = 0; // Mantém alinhado no chão
+                selectedObject.position.y = 0;
             }
         }
 
         function onPointerUp() {
             if (isDragging) {
                 isDragging = false;
-                controls.enabled = true; // Reativa os controles normais da câmera
+                controls.enabled = true;
             }
         }
 
@@ -558,9 +563,10 @@
             document.getElementById('selection-panel').style.display = 'flex';
         }
 
-        function rotateSelected() {
+        function rotateSelected(direction) {
             if (selectedObject) {
-                selectedObject.rotation.y += Math.PI / 4; // Gira 45°
+                // direction: -1 para esquerda (Q), 1 para direita (R)
+                selectedObject.rotation.y += (Math.PI / 4) * direction;
             }
         }
 
