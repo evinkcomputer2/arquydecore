@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOVAÉ Studio — Crie seu Espaço</title>
+    <title>NOVAÉ Studio — 3D Planner</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
+    <!-- Biblioteca Three.js para o 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -20,10 +23,10 @@
         body {
             background-color: #f4f4f5;
             color: #18181b;
-            display: flex;
-            flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         /* TELA DE CONFIGURAÇÃO INICIAL */
@@ -68,7 +71,6 @@
             font-size: 13px;
             color: #3f3f46;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .setup-card select {
@@ -79,13 +81,6 @@
             border-radius: 8px;
             font-size: 15px;
             background: #fafafa;
-            color: #18181b;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .setup-card select:focus {
-            border-color: #4f46e5;
         }
 
         .btn-primary {
@@ -105,275 +100,219 @@
             background: #27272a;
         }
 
-        /* HEADER DO EDITOR */
-        header {
-            height: 64px;
+        /* TOPO ESTILO HOMEBYME */
+        .top-toolbar {
+            height: 60px;
             background: #fff;
             border-bottom: 1px solid #e4e4e7;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 0 24px;
+            padding: 0 20px;
+            gap: 15px;
+            z-index: 10;
         }
 
-        .logo {
-            font-weight: 700;
-            font-size: 16px;
-            letter-spacing: 1px;
-            color: #18181b;
-        }
-
-        .project-info {
-            font-size: 14px;
-            color: #71717a;
-            background: #f4f4f5;
-            padding: 6px 14px;
-            border-radius: 20px;
-        }
-
-        /* LAYOUT PRINCIPAL DO EDITOR */
-        .editor-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* BARRA LATERAL (BIBLIOTECA) */
-        sidebar {
-            width: 280px;
+        .tool-btn {
             background: #fff;
-            border-right: 1px solid #e4e4e7;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow-y: auto;
-        }
-
-        sidebar h3 {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: #71717a;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-
-        .furniture-item {
-            background: #fafafa;
             border: 1px solid #e4e4e7;
-            padding: 14px;
-            border-radius: 8px;
-            cursor: grab;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-weight: 500;
-            font-size: 14px;
-            color: #27272a;
+            gap: 8px;
+            color: #3f3f46;
             transition: all 0.2s;
         }
 
-        .furniture-item:hover {
+        .tool-btn:hover {
             background: #f4f4f5;
-            border-color: #d4d4d8;
-            transform: translateY(-1px);
         }
 
-        .furniture-item i {
-            color: #4f46e5;
-            font-size: 16px;
-        }
-
-        /* ÁREA DA PLANTA (WORKSPACE) COM GRID */
-        .workspace {
+        /* CANVAS 3D */
+        #canvas-container {
             flex: 1;
-            background: #f1f1f3;
+            width: 100%;
             position: relative;
-            overflow: auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
         }
 
-        .room-canvas {
-            width: 650px;
-            height: 500px;
-            background-color: #ffffff;
-            /* Efeito de malha quadriculada (Grid de planta baixa) */
-            background-image: 
-                linear-gradient(to right, #f4f4f5 1px, transparent 1px),
-                linear-gradient(to bottom, #f4f4f5 1px, transparent 1px);
-            background-size: 20px 20px;
-            border: 3px solid #18181b;
-            position: relative;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
-            border-radius: 2px;
-        }
-
-        /* MÓVEIS POSICIONADOS NO AMBIENTE */
-        .placed-furniture {
+        /* BARRA DE ALTERNÂNCIA 2D/3D FLUTUANTE */
+        .view-switcher {
             position: absolute;
-            background: #e0e7ff;
-            border: 2px solid #4f46e5;
-            border-radius: 6px;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 6px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: #3730a3;
-            cursor: move;
-            user-select: none;
-            padding: 4px;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            gap: 6px;
+            z-index: 10;
         }
 
-        .placed-furniture .actions {
-            position: absolute;
-            top: -28px;
-            right: 0;
-            display: none;
-            background: #18181b;
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-
-        .placed-furniture:hover .actions {
-            display: flex;
-        }
-
-        .actions button {
-            background: none;
+        .view-btn {
+            padding: 8px 16px;
             border: none;
-            color: #fff;
-            padding: 4px 8px;
-            font-size: 11px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            border-radius: 6px;
+            color: #71717a;
         }
 
-        .actions button:hover {
-            background: #3f3f46;
+        .view-btn.active {
+            background: #18181b;
+            color: #fff;
         }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE SETUP INICIAL -->
+    <!-- TELA DE CONFIGURAÇÃO DE TAMANHO -->
     <div id="setup-screen">
         <div class="setup-card">
-            <h2>NOVAÉ Studio</h2>
-            <p>Configure o espaço inicial do seu projeto.</p>
+            <h2>NOVAÉ Studio 3D</h2>
+            <p>Selecione o ambiente e as dimensões iniciais.</p>
             
-            <label for="room-type">Ambiente</label>
+            <label>Tipo de Ambiente</label>
             <select id="room-type">
                 <option value="Sala de Estar">Sala de Estar</option>
                 <option value="Quarto">Quarto</option>
                 <option value="Cozinha">Cozinha</option>
-                <option value="Escritório">Escritório</option>
             </select>
 
-            <label for="room-size">Dimensões</label>
+            <label>Tamanho do Cômodo</label>
             <select id="room-size">
-                <option value="4x4">4m × 4m (Quadrado)</option>
-                <option value="5x4">5m × 4m (Retangular)</option>
-                <option value="3x3">3m × 3m (Compacto)</option>
+                <option value="4">4m × 4m (Padrão)</option>
+                <option value="5">5m × 5m (Espaçoso)</option>
+                <option value="3">3m × 3m (Compacto)</option>
             </select>
 
-            <button class="btn-primary" onclick="initStudio()">Começar a Projetar</button>
+            <button class="btn-primary" onclick="initStudio()">Criar Ambiente 3D</button>
         </div>
     </div>
 
-    <!-- CABEÇALHO -->
-    <header>
-        <div class="logo"><i class="fa-solid fa-wand-magic-sparkles" style="color: #4f46e5; margin-right: 8px;"></i> NOVAÉ STUDIO</div>
-        <div class="project-info" id="project-label">Projeto: Sala de Estar (4x4m)</div>
-        <button class="btn-primary" style="width: auto; padding: 8px 16px; font-size: 13px;" onclick="location.reload()">Novo Projeto</button>
+    <!-- BARRA SUPERIOR -->
+    <header class="top-toolbar">
+        <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
+        <button class="tool-btn"><i class="fa-solid fa-bars"></i> Novo projeto</button>
+        <div style="flex: 1; text-align: center; font-weight: 600; color: #71717a;" id="project-title">Projeto: Sala de Estar (4x4m)</div>
+        <button class="tool-btn" style="background: #4f46e5; color: #fff; border: none;" onclick="saveToFirebase模拟()"><i class="fa-solid fa-floppy-disk"></i> Salvar Projeto</button>
     </header>
 
-    <!-- CONTAINER DO EDITOR -->
-    <div class="editor-container">
-        <!-- BIBLIOTECA DE MÓVEIS -->
-        <sidebar>
-            <h3>Mobília & Elementos</h3>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Sofá 3 Lugares" data-w="160" data-h="80">
-                <i class="fa-solid fa-couch"></i> Sofá 3 Lugares
-            </div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Poltrona" data-w="70" data-h="70">
-                <i class="fa-solid fa-chair"></i> Poltrona
-            </div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Rack TV" data-w="140" data-h="40">
-                <i class="fa-solid fa-tv"></i> Rack / Painel TV
-            </div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa de Centro" data-w="90" data-h="50">
-                <i class="fa-solid fa-square"></i> Mesa de Centro
-            </div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Cama Casal" data-w="140" data-h="190">
-                <i class="fa-solid fa-bed"></i> Cama Casal
-            </div>
-            <div class="furniture-item" draggable="true" ondragstart="drag(event)" data-name="Mesa Jantar" data-w="150" data-h="90">
-                <i class="fa-solid fa-utensils"></i> Mesa de Jantar
-            </div>
-        </sidebar>
+    <!-- ÁREA DO 3D -->
+    <div id="canvas-container"></div>
 
-        <!-- ÁREA DE TRABALHO / PLANTA -->
-        <div class="workspace" ondragover="allowDrop(event)" ondrop="drop(event)">
-            <div class="room-canvas" id="roomCanvas">
-                <!-- Móveis inseridos vão aparecer aqui -->
-            </div>
-        </div>
+    <!-- ALTERNADOR DE VISTA 2D / 3D -->
+    <div class="view-switcher">
+        <button class="view-btn" onclick="setView('2D')">2D</button>
+        <button class="view-btn active" onclick="setView('3D')">3D</button>
     </div>
 
     <script>
+        let scene, camera, renderer, roomSize = 4;
+
         function initStudio() {
-            const roomType = document.getElementById('room-type').value;
-            const roomSize = document.getElementById('room-size').value;
-            
-            document.getElementById('project-label').innerText = `Projeto: ${roomType} (${roomSize}m)`;
+            const type = document.getElementById('room-type').value;
+            roomSize = parseInt(document.getElementById('room-size').value);
+            document.getElementById('project-title').innerText = `Projeto: ${type} (${roomSize}x${roomSize}m)`;
             document.getElementById('setup-screen').style.display = 'none';
-        }
-
-        function allowDrop(ev) {
-            ev.preventDefault();
-        }
-
-        function drag(ev) {
-            ev.dataTransfer.setData("text/plain", JSON.stringify({
-                name: ev.target.getAttribute('data-name') || ev.target.innerText.trim(),
-                width: ev.target.getAttribute('data-w'),
-                height: ev.target.getAttribute('data-h')
-            }));
-        }
-
-        function drop(ev) {
-            ev.preventDefault();
-            const canvas = document.getElementById('roomCanvas');
-            const rect = canvas.getBoundingClientRect();
             
-            const x = ev.clientX - rect.left - 40;
-            const y = ev.clientY - rect.top - 20;
-
-            const data = JSON.parse(ev.dataTransfer.getData("text/plain"));
-
-            const item = document.createElement('div');
-            item.className = 'placed-furniture';
-            item.style.left = `${Math.max(0, x)}px`;
-            item.style.top = `${Math.max(0, y)}px`;
-            item.style.width = `${data.width}px`;
-            item.style.height = `${data.height}px`;
-            
-            item.innerHTML = `
-                <span>${data.name}</span>
-                <div class="actions">
-                    <button onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i> Excluir</button>
-                </div>
-            `;
-
-            canvas.appendChild(item);
+            setup3DScene();
         }
+
+        function setup3DScene() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Cena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf4f4f5);
+
+            // 2. Câmera
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 10, 12);
+            camera.lookAt(0, 0, 0);
+
+            // 3. Renderizador
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // 4. Luzes
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(10, 20, 10);
+            scene.add(directionalLight);
+
+            // 5. Piso de Madeira Realista (Criado via procedural/cor)
+            const floorGeo = new THREE.PlaneGeometry(roomSize, roomSize);
+            const floorMat = new THREE.MeshStandardMaterial({ 
+                color: 0xc49a6c, 
+                roughness: 0.4 
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            scene.add(floor);
+
+            // 6. Paredes translúcidas (Estilo HomeByMe)
+            const wallMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff, 
+                transparent: true, 
+                opacity: 0.3, 
+                side: THREE.DoubleSide 
+            });
+            
+            // Parede Fundo
+            const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 3), wallMat);
+            wallBack.position.set(0, 1.5, -roomSize/2);
+            scene.add(wallBack);
+
+            // Parede Esquerda
+            const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 3), wallMat);
+            wallLeft.rotation.y = Math.PI / 2;
+            wallLeft.position.set(-roomSize/2, 1.5, 0);
+            scene.add(wallLeft);
+
+            // Loop de animação renderizando a cena
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        function setView(mode) {
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (mode === '2D') {
+                camera.position.set(0, 15, 0.001); // Visão de cima (Planta Baixa)
+                camera.lookAt(0, 0, 0);
+            } else {
+                camera.position.set(0, 10, 12); // Visão 3D em perspectiva
+                camera.lookAt(0, 0, 0);
+            }
+        }
+
+        function saveToFirebase模拟() {
+            alert("Estrutura pronta para salvar no Firebase! Os dados do tamanho (" + roomSize + "m) foram capturados.");
+            // Aqui você integrará o SDK do Firebase para salvar os dados na nuvem futuramente.
+        }
+
+        window.addEventListener('resize', () => {
+            if(camera && renderer) {
+                const container = document.getElementById('canvas-container');
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+        });
     </script>
 </body>
 </html>
