@@ -322,6 +322,9 @@
             <div class="furniture-card" onclick="addFurniture('Televisão (Parede)', 'tv')">
                 <i class="fa-solid fa-desktop"></i> Televisão (Parede)
             </div>
+            <div class="furniture-card" onclick="addFurniture('PlayStation', 'playstation')">
+                <i class="fa-solid fa-gamepad"></i> PlayStation
+            </div>
             <div class="furniture-card" onclick="addFurniture('Setup Gamer', 'gamer_setup')">
                 <i class="fa-solid fa-headset"></i> Setup Gamer
             </div>
@@ -426,7 +429,6 @@
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('project-title').innerText = 'Projeto: Quarto Personalizado (5x5m)';
             
-            // Definindo coordenadas perfeitas em sentido horário para formar um quadrado exato
             roomPoints = [
                 new THREE.Vector3(-2.5, 0, -2.5),
                 new THREE.Vector3(2.5, 0, -2.5),
@@ -553,6 +555,23 @@
                 screen.position.y = 1.3;
                 screen.position.z = 0.01;
                 group.add(wallMount, screen);
+            }
+            else if (type === 'playstation') {
+                // Console principal (estilo moderno na horizontal)
+                const consoleBody = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.32), new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.3 }));
+                consoleBody.position.y = 0.05;
+                
+                // Detalhes centrais (luz azul / fenda de disco)
+                const centerStripe = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.02, 0.33), new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x1d4ed8 }));
+                centerStripe.position.y = 0.05;
+
+                // Pequeno controle DualSense ao lado do console
+                const controllerBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.08), new THREE.MeshStandardMaterial({ color: 0xf4f4f5 }));
+                controllerBody.position.set(0.3, 0.02, 0);
+
+                group.add(consoleBody, centerStripe, controllerBody);
+                // Posiciona a uma altura ideal para ficar sobre o rack abaixo da TV
+                group.position.y = 0.45;
             }
             else if (type === 'gamer_setup') {
                 const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 0.7), new THREE.MeshStandardMaterial({ color: 0x18181b }));
@@ -749,7 +768,6 @@
                     let endPoint = new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2);
                     
                     if (pencilStartPoint && pencilStartPoint.distanceTo(endPoint) > 0.1) {
-                        // Se o usuário fechar perto do ponto inicial (primeiro ponto), não adiciona duplicado e fecha o polígono corretamente
                         if (roomPoints.length > 2 && endPoint.distanceTo(roomPoints[0]) < 0.5) {
                             buildRoomGeometry();
                         } else {
