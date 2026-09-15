@@ -30,7 +30,7 @@
             flex-direction: column;
         }
 
-        /* TELA DE CONFIGURAÇÃO INICIAL */
+        /* TELA DE ORIENTAÇÃO DO LÁPIS / SETUP */
         #setup-screen {
             position: fixed;
             top: 0;
@@ -49,8 +49,9 @@
             background: #fff;
             padding: 40px;
             border-radius: 16px;
-            width: 420px;
+            width: 440px;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            text-align: center;
         }
 
         .setup-card h2 {
@@ -63,25 +64,7 @@
             color: #71717a;
             font-size: 14px;
             margin-bottom: 24px;
-        }
-
-        .setup-card label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 13px;
-            color: #3f3f46;
-            text-transform: uppercase;
-        }
-
-        .setup-card select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #e4e4e7;
-            border-radius: 8px;
-            font-size: 15px;
-            background: #fafafa;
+            line-height: 1.5;
         }
 
         .btn-primary {
@@ -95,6 +78,10 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-primary:hover {
@@ -132,6 +119,12 @@
             background: #f4f4f5;
         }
 
+        .tool-btn.active-pencil {
+            background: #4f46e5;
+            color: #fff;
+            border-color: #4f46e5;
+        }
+
         /* PAINEL DE CONTROLE DO MÓVEL SELECIONADO */
         #selection-panel {
             position: absolute;
@@ -145,7 +138,7 @@
             flex-direction: column;
             gap: 8px;
             z-index: 100;
-            width: 240px;
+            width: 250px;
         }
 
         #selection-panel h4 {
@@ -276,35 +269,21 @@
 </head>
 <body>
 
-    <!-- TELA DE SETUP -->
+    <!-- TELA DE SETUP / ORIENTAÇÃO DO LÁPIS -->
     <div id="setup-screen">
         <div class="setup-card">
+            <div style="font-size: 40px; color: #4f46e5; margin-bottom: 12px;"><i class="fa-solid fa-pen-ruler"></i></div>
             <h2>NOVAÉ Studio 3D</h2>
-            <p>Selecione o ambiente e as dimensões do cômodo.</p>
-            
-            <label>Ambiente</label>
-            <select id="room-type">
-                <option value="Quarto">Quarto</option>
-                <option value="Sala de Estar">Sala de Estar</option>
-                <option value="Cozinha">Cozinha</option>
-            </select>
-
-            <label>Tamanho (Metros)</label>
-            <select id="room-size">
-                <option value="5">5m × 5m (Espaçoso)</option>
-                <option value="4">4m × 4m (Padrão)</option>
-                <option value="6">6m × 6m (Grande)</option>
-            </select>
-
-            <button class="btn-primary" onclick="initStudio()">Iniciar Projeto 3D</button>
+            <p>Desenhe o formato do seu cômodo clique a clique usando a ferramenta <b>Lápis</b> ou clique no botão abaixo para usar o modelo padrão de 5x5m.</p>
+            <button class="btn-primary" onclick="startWithDefaultRoom()"><i class="fa-solid fa-play"></i> Começar com Quarto 5x5m</button>
         </div>
     </div>
 
     <!-- BARRA SUPERIOR -->
     <header class="top-toolbar">
         <button class="tool-btn" onclick="location.reload()"><i class="fa-solid fa-house"></i> Início</button>
-        <button class="tool-btn"><i class="fa-solid fa-bars"></i> Novo projeto</button>
-        <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Quarto (5x5m)</div>
+        <button class="tool-btn" id="pencil-tool-btn" onclick="togglePencilMode()"><i class="fa-solid fa-pencil"></i> Ferramenta Lápis (Paredes)</button>
+        <div style="flex: 1; text-align: center; font-weight: 600; color: #52525b; font-size: 14px;" id="project-title">Projeto: Novo Ambiente</div>
         <button class="tool-btn" style="background: #18181b; color: #fff; border: none;" onclick="alert('Projeto salvo com sucesso!')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </header>
 
@@ -332,8 +311,8 @@
             <div class="furniture-card" onclick="addFurniture('Rack TV', 'tv_rack')">
                 <i class="fa-solid fa-tv"></i> Rack / Painel TV
             </div>
-            <div class="furniture-card" onclick="addFurniture('Televisão', 'tv')">
-                <i class="fa-solid fa-desktop"></i> Televisão
+            <div class="furniture-card" onclick="addFurniture('Televisão (Paredes)', 'tv')">
+                <i class="fa-solid fa-desktop"></i> Televisão (Parede)
             </div>
             <div class="furniture-card" onclick="addFurniture('Setup Gamer', 'gamer_setup')">
                 <i class="fa-solid fa-headset"></i> Setup Gamer
@@ -357,35 +336,36 @@
 
     <script>
         let scene, camera, renderer, controls;
-        let roomSize = 5, furnitures = [], selectedObject = null, isDragging = false;
+        let furnitures = [], selectedObject = null, isDragging = false;
         let raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
         let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         let offset = new THREE.Vector3();
 
-        function initStudio() {
-            const type = document.getElementById('room-type').value;
-            roomSize = parseInt(document.getElementById('room-size').value);
-            document.getElementById('project-title').innerText = `Projeto: ${type} (${roomSize}x${roomSize}m)`;
-            document.getElementById('setup-screen').style.display = 'none';
-            
+        // Variáveis do Lápis e Paredes
+        let isPencilActive = false;
+        let roomPoints = [];
+        let roomGroup = new THREE.Group();
+        let temporaryLineMesh = null;
+
+        window.onload = () => {
             setup3DScene();
-        }
+        };
 
         function setup3DScene() {
             const container = document.getElementById('canvas-container');
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf1f1f3);
+            scene.add(roomGroup);
 
             camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 9, 12);
+            camera.position.set(0, 10, 14);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
-            // OrbitControls para navegar pelo ambiente
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
@@ -399,49 +379,98 @@
             dirLight.position.set(10, 20, 10);
             scene.add(dirLight);
 
-            // Grid e Piso
-            const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xe5e7eb);
+            // Grid no chão
+            const gridHelper = new THREE.GridHelper(50, 50, 0xcccccc, 0xe5e7eb);
             gridHelper.position.y = -0.01;
             scene.add(gridHelper);
 
-            const floorGeo = new THREE.PlaneGeometry(roomSize, roomSize);
-            const floorMat = new THREE.MeshStandardMaterial({ color: 0xc89d7c, roughness: 0.35 });
-            const floor = new THREE.Mesh(floorGeo, floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            scene.add(floor);
-
-            // Paredes translúcidas
-            const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
-            
-            const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 2.5), wallMat);
-            wallBack.position.set(0, 1.25, -roomSize/2);
-            scene.add(wallBack);
-
-            const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, 2.5), wallMat);
-            wallLeft.rotation.y = Math.PI / 2;
-            wallLeft.position.set(-roomSize/2, 1.25, 0);
-            scene.add(wallLeft);
-
-            // Eventos de Mouse para arrastar clicando e segurando
+            // Eventos de Mouse
             const dom = renderer.domElement;
             dom.addEventListener('pointerdown', onPointerDown);
             dom.addEventListener('pointermove', onPointerMove);
             dom.addEventListener('pointerup', onPointerUp);
 
-            // Eventos de Teclado: Q (Esquerda), R (Direita), Delete/Backspace (Excluir)
+            // Teclado
             window.addEventListener('keydown', (e) => {
                 if (!selectedObject) return;
                 const key = e.key.toLowerCase();
-                if (key === 'q') {
-                    rotateSelected(-1); // Esquerda
-                } else if (key === 'r') {
-                    rotateSelected(1);  // Direita
-                } else if (e.key === 'Delete' || e.key === 'Backspace') {
-                    deleteSelected();
-                }
+                if (key === 'q') rotateSelected(-1);
+                else if (key === 'r') rotateSelected(1);
+                else if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
             });
 
             animate();
+        }
+
+        function startWithDefaultRoom() {
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('project-title').innerText = 'Projeto: Quarto Personalizado (5x5m)';
+            
+            // Desenhar sala quadrada padrão 5x5
+            roomPoints = [
+                new THREE.Vector3(-2.5, 0, -2.5),
+                new THREE.Vector3(2.5, 0, -2.5),
+                new THREE.Vector3(2.5, 0, 2.5),
+                new THREE.Vector3(-2.5, 0, 2.5)
+            ];
+            buildRoomGeometry();
+        }
+
+        function togglePencilMode() {
+            isPencilActive = !isPencilActive;
+            const btn = document.getElementById('pencil-tool-btn');
+            if (isPencilActive) {
+                btn.classList.add('active-pencil');
+                controls.enabled = false; // Desativa órbita para desenhar com cliques
+                roomPoints = [];
+                roomGroup.clear();
+                alert('Modo Lápis ativado! Clique no plano 3D para marcar os cantos do seu terreno/cômodo. Dê um duplo clique ou feche o polígono para gerar as paredes.');
+            } else {
+                btn.classList.remove('active-pencil');
+                controls.enabled = true;
+            }
+        }
+
+        function buildRoomGeometry() {
+            roomGroup.clear();
+            if (roomPoints.length < 3) return;
+
+            // Criar forma do chão baseada nos pontos
+            const shape = new THREE.Shape();
+            roomPoints.forEach((pt, index) => {
+                if (index === 0) shape.moveTo(pt.x, pt.z);
+                else shape.lineTo(pt.x, pt.z);
+            });
+
+            const floorGeo = new THREE.ShapeGeometry(shape);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0xc89d7c, roughness: 0.35, side: THREE.DoubleSide });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = Math.PI / 2;
+            roomGroup.add(floor);
+
+            // Construir paredes verticais ao longo de cada aresta
+            const wallHeight = 2.6;
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
+
+            for (let i = 0; i < roomPoints.length; i++) {
+                let p1 = roomPoints[i];
+                let p2 = roomPoints[(i + 1) % roomPoints.length];
+
+                let distance = p1.distanceTo(p2);
+                let wallGeo = new THREE.PlaneGeometry(distance, wallHeight);
+                let wall = new THREE.Mesh(wallGeo, wallMat);
+
+                // Posicionar parede no centro da aresta
+                let midX = (p1.x + p2.x) / 2;
+                let midZ = (p1.z + p2.z) / 2;
+                wall.position.set(midX, wallHeight / 2, midZ);
+
+                // Rotacionar na direção correta
+                let angle = Math.atan2(p2.z - p1.z, p2.x - p1.x);
+                wall.rotation.y = -angle;
+
+                roomGroup.add(wall);
+            }
         }
 
         function addFurniture(name, type) {
@@ -472,16 +501,16 @@
                 group.add(rack);
             }
             else if (type === 'tv') {
-                const stand = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.3), new THREE.MeshStandardMaterial({ color: 0x18181b }));
-                stand.position.y = 0.025;
-                const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3), new THREE.MeshStandardMaterial({ color: 0x71717a }));
-                pole.position.y = 0.2;
-                const screen = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.06), new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.1 }));
-                screen.position.y = 0.65;
-                group.add(stand, pole, screen);
+                // TV de parede grudada (painel/suporte embutido)
+                const wallMount = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.8, 0.04), new THREE.MeshStandardMaterial({ color: 0x27272a }));
+                wallMount.position.y = 1.3;
+                wallMount.position.z = -0.02;
+                const screen = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.72, 0.05), new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.1 }));
+                screen.position.y = 1.3;
+                screen.position.z = 0.01;
+                group.add(wallMount, screen);
             }
             else if (type === 'gamer_setup') {
-                // Mesa de escritório/gamer
                 const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 0.7), new THREE.MeshStandardMaterial({ color: 0x18181b }));
                 deskTop.position.y = 0.75;
                 const legGeo = new THREE.BoxGeometry(0.06, 0.72, 0.06);
@@ -495,14 +524,12 @@
                 });
                 group.add(deskTop);
 
-                // PC Gamer (Gabinete com torre LED azulada)
                 const pcCase = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.45, 0.45), new THREE.MeshStandardMaterial({ color: 0x09090b }));
                 pcCase.position.set(-0.5, 1.0, 0);
                 const pcLed = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.35, 0.3), new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x3b82f6 }));
                 pcLed.position.set(-0.38, 1.0, 0);
                 group.add(pcCase, pcLed);
 
-                // Monitor Gamer Widescreen
                 const monitorBase = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 0.2), new THREE.MeshStandardMaterial({ color: 0x27272a }));
                 monitorBase.position.set(0, 0.79, -0.1);
                 const monitorStand = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), new THREE.MeshStandardMaterial({ color: 0x27272a }));
@@ -511,7 +538,6 @@
                 monitorScreen.position.set(0, 1.15, -0.1);
                 group.add(monitorBase, monitorStand, monitorScreen);
 
-                // Teclado e Mouse
                 const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.02, 0.12), new THREE.MeshStandardMaterial({ color: 0x27272a }));
                 keyboard.position.set(0, 0.79, 0.15);
                 const mousePad = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.01, 0.12), new THREE.MeshStandardMaterial({ color: 0x3f3f46 }));
@@ -549,26 +575,19 @@
                 });
             }
             else if (type === 'armchair') {
-                // Poltrona Elegance Reformada e Realista
                 const mat = new THREE.MeshStandardMaterial({ color: 0x4f46e5 });
                 const woodMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
 
-                // Assento almofadado
                 const seat = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.22, 0.75), mat);
                 seat.position.y = 0.32;
-
-                // Encosto confortável inclinado
                 const back = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.65, 0.18), mat);
                 back.position.set(0, 0.7, -0.3);
                 back.rotation.x = -0.1;
-
-                // Braços laterais
                 const armLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.45, 0.8), mat);
                 armLeft.position.set(-0.4, 0.45, 0);
                 const armRight = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.45, 0.8), mat);
                 armRight.position.set(0.4, 0.45, 0);
 
-                // Pés de madeira elegantes
                 [-0.32, 0.32].forEach(x => {
                     [-0.32, 0.32].forEach(z => {
                         const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.015, 0.2), woodMat);
@@ -584,6 +603,7 @@
             scene.add(group);
             furnitures.push(group);
             selectObject(group);
+            document.getElementById('setup-screen').style.display = 'none';
         }
 
         function onPointerDown(event) {
@@ -592,8 +612,30 @@
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(furnitures, true);
 
+            // Se o modo Lápis estiver ativo, registra pontos do cômodo
+            if (isPencilActive) {
+                let planeIntersect = new THREE.Vector3();
+                if (raycaster.ray.intersectPlane(plane, planeIntersect)) {
+                    roomPoints.push(new THREE.Vector3(Math.round(planeIntersect.x * 2) / 2, 0, Math.round(planeIntersect.z * 2) / 2));
+                    
+                    if (roomPoints.length >= 3) {
+                        // Se clicar próximo ao primeiro ponto, fecha o polígono
+                        if (roomPoints[0].distanceTo(roomPoints[roomPoints.length - 1]) < 0.6) {
+                            roomPoints.pop();
+                            buildRoomGeometry();
+                            togglePencilMode();
+                            document.getElementById('setup-screen').style.display = 'none';
+                            return;
+                        }
+                    }
+                    buildRoomGeometry();
+                }
+                return;
+            }
+
+            // Seleção e Arraste de Móveis
+            const intersects = raycaster.intersectObjects(furnitures, true);
             if (intersects.length > 0) {
                 let obj = intersects[0].object;
                 while (obj.parent && !furnitures.includes(obj)) {
@@ -612,7 +654,7 @@
         }
 
         function onPointerMove(event) {
-            if (!isDragging || !selectedObject) return;
+            if (!isDragging || !selectedObject || isPencilActive) return;
 
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -642,7 +684,6 @@
 
         function rotateSelected(direction) {
             if (selectedObject) {
-                // direction: -1 para esquerda (Q), 1 para direita (R)
                 selectedObject.rotation.y += (Math.PI / 4) * direction;
             }
         }
@@ -667,10 +708,10 @@
             event.target.classList.add('active');
 
             if (mode === '2D') {
-                camera.position.set(0, 12, 0.001);
+                camera.position.set(0, 14, 0.001);
                 controls.target.set(0, 0, 0);
             } else {
-                camera.position.set(0, 9, 12);
+                camera.position.set(0, 10, 14);
                 controls.target.set(0, 0, 0);
             }
         }
