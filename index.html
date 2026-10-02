@@ -4,8 +4,270 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArquyDecore - Plataforma de Arquitetura e Interiores</title>
-    <!-- Vinculando o arquivo CSS externo -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- VARIÁVEIS E RESET --- */
+        :root {
+            --bg-color: #f8f9fa;
+            --surface-color: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --border-color: #e5e7eb;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR (DESKTOP) --- */
+        aside {
+            width: 280px;
+            background-color: var(--surface-color);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand span {
+            color: var(--primary);
+        }
+
+        nav p {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: #eef2ff;
+            color: var(--primary);
+        }
+
+        /* --- CONTEÚDO PRINCIPAL --- */
+        main {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            max-width: 1200px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .search-shortcut {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: white;
+            padding: 3rem;
+            border-radius: var(--radius);
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .hero-content h1 {
+            font-size: 2.25rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-content p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            background-color: white;
+            color: var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #f3f4f6;
+            transform: translateY(-2px);
+        }
+
+        /* --- SEÇÕES E GRIDS DE CARDS --- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .card-img-placeholder {
+            height: 180px;
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .card-body span {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-body h3 {
+            font-size: 1.125rem;
+            margin-top: 0.25rem;
+            color: var(--text-main);
+        }
+
+        /* Botão flutuante para abrir menu no mobile */
+        .menu-toggle {
+            display: none;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* --- RESPONSIVIDADE (MOBILE) --- */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            aside {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 1rem;
+            }
+
+            main {
+                padding: 1.5rem 1rem;
+            }
+
+            .hero {
+                flex-direction: column;
+                padding: 2rem 1.5rem;
+                text-align: center;
+            }
+
+            .hero-content h1 {
+                font-size: 1.75rem;
+            }
+
+            .menu-toggle {
+                display: block;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -28,7 +290,7 @@
                 <a href="#">Preferências</a>
             </nav>
         </div>
-        <div class="support-box">
+        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 2rem;">
             <strong>Precisa de ajuda?</strong><br>Central de suporte
         </div>
     </aside>
@@ -88,9 +350,10 @@
     </main>
 
     <script>
+        // Função simples caso queira expandir/recolher o menu no mobile futuramente
         function toggleMenu() {
             const sidebar = document.getElementById('sidebar');
-            if (sidebar.style.display === 'none' || sidebar.style.display === '') {
+            if (sidebar.style.display === 'none') {
                 sidebar.style.display = 'flex';
             } else {
                 sidebar.style.display = 'none';
